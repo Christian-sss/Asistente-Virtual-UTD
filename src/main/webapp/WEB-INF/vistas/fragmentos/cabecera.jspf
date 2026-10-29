@@ -1,0 +1,69 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}"/>
+<c:set var="usr" value="${sessionScope.usuarioAdministrativo}"/>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><c:out value="${titulo}"/> | Asistente Virtual UTD - UNJBG</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="${ctx}/recursos/css/estilos.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+<nav class="navbar navbar-expand-lg navbar-dark barra-principal sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="${ctx}/">
+            <span class="logo-marca"><i class="bi bi-compass"></i></span>
+            <span class="lh-sm"><strong>Asistente UTD</strong><br><small class="fw-light">UNJBG - Trámite Documentario</small></span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-label="Menú">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+                <li class="nav-item"><a class="nav-link ${menu == 'tramites' ? 'active' : ''}" href="${ctx}/tramites"><i class="bi bi-grid"></i> Trámites</a></li>
+                <li class="nav-item"><a class="nav-link ${menu == 'orientacion' ? 'active' : ''}" href="${ctx}/orientacion"><i class="bi bi-signpost-split"></i> Orientación guiada</a></li>
+                <li class="nav-item"><a class="nav-link ${menu == 'revision' ? 'active' : ''}" href="${ctx}/revision"><i class="bi bi-file-earmark-check"></i> Revisar documento</a></li>
+                <li class="nav-item"><a class="nav-link ${menu == 'normativa' ? 'active' : ''}" href="${ctx}/normativa"><i class="bi bi-journal-bookmark"></i> Normativa</a></li>
+                <c:choose>
+                    <c:when test="${not empty usr}">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle ${menu == 'admin' ? 'active' : ''}" href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-badge"></i> <c:out value="${usr.usuario}"/>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="${ctx}/admin"><i class="bi bi-speedometer2"></i> Panel</a></li>
+                                <li><a class="dropdown-item" href="${ctx}/admin/contrasena"><i class="bi bi-key"></i> Cambiar contraseña</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="post" action="${ctx}/logout" class="px-3">
+                                        <input type="hidden" name="_csrf" value="${csrf}">
+                                        <button class="btn btn-link p-0 text-danger text-decoration-none"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="nav-item"><a class="btn btn-sm btn-outline-light ms-lg-2" href="${ctx}/login"><i class="bi bi-lock"></i> Personal UTD</a></li>
+                    </c:otherwise>
+                </c:choose>
+            </ul>
+        </div>
+    </div>
+</nav>
+<main class="flex-grow-1">
+<c:if test="${not empty sessionScope.flashTexto}">
+    <div class="container mt-3">
+        <div class="alert alert-${sessionScope.flashTipo} alert-dismissible fade show" role="alert">
+            <c:out value="${sessionScope.flashTexto}"/>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    </div>
+    <c:remove var="flashTexto" scope="session"/>
+    <c:remove var="flashTipo" scope="session"/>
+</c:if>

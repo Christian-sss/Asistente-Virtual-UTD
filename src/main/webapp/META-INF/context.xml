@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Configuración del entorno. Puede sobrescribirse en Tomcat
+  (conf/Catalina/localhost/asistente-virtual.xml) sin cambiar el código.
+-->
+<Context path="/asistente-virtual">
+    <Parameter name="db.url" value="jdbc:postgresql://localhost:5432/asistente_utd" override="true"/>
+    <Parameter name="db.usuario" value="postgres" override="true"/>
+    <Parameter name="db.contrasena" value="postgres" override="true"/>
+
+    <!-- Directorio temporal fuera de la carpeta pública; vacío = carpeta temporal del sistema -->
+    <Parameter name="archivos.directorio" value="" override="true"/>
+    <Parameter name="archivos.horasRetencion" value="24" override="true"/>
+    <Parameter name="limpieza.intervaloMinutos" value="60" override="true"/>
+
+    <!-- Antivirus ClamAV (clamd). Si es obligatorio y no está disponible, se rechaza la carga -->
+    <Parameter name="clamav.host" value="127.0.0.1" override="true"/>
+    <Parameter name="clamav.puerto" value="3310" override="true"/>
+    <Parameter name="clamav.obligatorio" value="false" override="true"/>
+</Context>

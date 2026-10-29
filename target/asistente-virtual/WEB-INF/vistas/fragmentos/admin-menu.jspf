@@ -1,0 +1,18 @@
+<%@ page pageEncoding="UTF-8" %>
+<div class="encabezado-pagina pb-0">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <h1><i class="bi bi-speedometer2"></i> Panel de administración</h1>
+            <span class="badge text-bg-primary fs-6"><i class="bi bi-person-badge"></i> <c:out value="${usr.nombreCompleto}"/> &middot; <c:out value="${usr.rol}"/></span>
+        </div>
+        <ul class="nav nav-tabs border-0">
+            <li class="nav-item"><a class="nav-link ${seccion == 'panel' ? 'active' : ''}" href="${ctx}/admin">Resumen</a></li>
+            <li class="nav-item"><a class="nav-link ${seccion == 'tramites' ? 'active' : ''}" href="${ctx}/admin/tramites">Trámites</a></li>
+            <c:if test="${usr.rol == 'ADMIN_CONTENIDOS'}">
+                <li class="nav-item"><a class="nav-link ${seccion == 'preguntas' ? 'active' : ''}" href="${ctx}/admin/preguntas">Preguntas guiadas</a></li>
+                <li class="nav-item"><a class="nav-link ${seccion == 'normativas' ? 'active' : ''}" href="${ctx}/admin/normativas">Normativas</a></li>
+            </c:if>
+            <li class="nav-item"><a class="nav-link ${seccion == 'bitacora' ? 'active' : ''}" href="${ctx}/admin/bitacora">Bitácora</a></li>
+        </ul>
+    </div>
+</div>

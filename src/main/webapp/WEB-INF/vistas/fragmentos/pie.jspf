@@ -1,0 +1,22 @@
+<%@ page pageEncoding="UTF-8" %>
+</main>
+<footer class="pie mt-5">
+    <div class="container py-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-8">
+                <strong>Universidad Nacional Jorge Basadre Grohmann</strong> &middot; Unidad de Trámite Documentario y Archivo<br>
+                <small>Sede Los Granados: Av. Miraflores y Av. Cuzco S/N, Tacna &middot; Lunes a viernes de 08:30 a 15:00 &middot; Teléfono 052-583000</small>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <small>Información basada en el TUPA UNJBG<br>(R.R. N.° 11021-2023-UNJBG)</small>
+            </div>
+        </div>
+        <hr class="opacity-25">
+        <small class="d-block text-center opacity-75">
+            Orientación referencial: no reemplaza la recepción, la numeración ni el seguimiento oficial del expediente.
+        </small>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
