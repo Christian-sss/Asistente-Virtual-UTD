@@ -180,9 +180,9 @@ body {
     color: var(--texto-suave);
 }
 
-.pie {
-    background: var(--azul-oscuro);
-    color: #dfe7f1;
+main {
+       padding-bottom: 3rem;
+   }
 }
 
 .panel-lateral .list-group-item.active {
