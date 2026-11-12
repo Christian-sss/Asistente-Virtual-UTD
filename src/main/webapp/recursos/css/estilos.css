@@ -215,3 +215,66 @@ code.regex {
         background: #fff;
     }
 }
+
+/* ---------- Plano del campus (RF-09) ---------- */
+.plano-campus {
+    height: 520px;
+    border-radius: 12px;
+    background: #eef2e6;
+    z-index: 0;
+}
+
+@media (max-width: 576px) {
+    .plano-campus {
+        height: 380px;
+    }
+}
+
+.marcador-secuencia span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #c0392b;
+    color: #fff;
+    font-weight: 700;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+}
+
+.popup-punto {
+    min-width: 200px;
+}
+
+.canal-item {
+    word-break: break-word;
+}
+
+.estado-flujo .badge {
+    font-size: .8rem;
+}
+
+/* Menú principal: con siete opciones se evita que los textos se partan en dos líneas */
+@media (min-width: 1200px) {
+    .barra-principal .nav-link {
+        white-space: nowrap;
+        font-size: .92rem;
+        padding-left: .45rem !important;
+        padding-right: .45rem !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .barra-principal .navbar-nav > .nav-item > .nav-link > .bi {
+        display: none;
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+    .barra-principal .navbar-brand br,
+    .barra-principal .navbar-brand small {
+        display: none;
+    }
+}

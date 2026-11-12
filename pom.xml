@@ -6,7 +6,7 @@
 
     <groupId>pe.edu.unjbg.utd</groupId>
     <artifactId>asistente-virtual</artifactId>
-    <version>1.0</version>
+    <version>2.0</version>
     <packaging>war</packaging>
     <name>Asistente Virtual Web de Trámites Documentarios - UTD UNJBG</name>
 
@@ -56,6 +56,19 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
             <version>2.9.2</version>
+        </dependency>
+        <!-- OCR opcional para imágenes y PDF escaneados (RF-07). Requiere Tesseract instalado y
+             se activa con ocr.habilitado=true en context.xml -->
+        <dependency>
+            <groupId>net.sourceforge.tess4j</groupId>
+            <artifactId>tess4j</artifactId>
+            <version>5.13.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Seguridad -->
         <dependency>

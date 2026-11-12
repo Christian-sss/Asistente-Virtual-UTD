@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class TramiteDAO {
 
     public List<Categoria> listarCategorias(Connection cn) throws SQLException {
         String sql = "SELECT c.*, (SELECT count(*) FROM tramite t WHERE t.id_categoria = c.id_categoria "
-                + "AND t.estado_contenido = 'PUBLICADO') AS total FROM categoria c ORDER BY c.orden";
+                + "AND t.publicado) AS total FROM categoria c ORDER BY c.orden, c.nombre";
         List<Categoria> lista = new ArrayList<>();
         try (PreparedStatement ps = cn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -37,15 +38,16 @@ public class TramiteDAO {
                 c.setDescripcion(rs.getString("descripcion"));
                 c.setIcono(rs.getString("icono"));
                 c.setTotalTramites(rs.getInt("total"));
+                c.setOrden(rs.getInt("orden"));
                 lista.add(c);
             }
         }
         return lista;
     }
 
-    /** Trámites publicados filtrados por texto (nombre o descripción) y categoría. */
+    /** Trámites visibles al público (con una versión publicada), filtrados por texto y categoría. */
     public List<Tramite> buscarPublicados(Connection cn, String texto, Integer idCategoria) throws SQLException {
-        StringBuilder sql = new StringBuilder(SELECT_TRAMITE + "WHERE t.estado_contenido = 'PUBLICADO' ");
+        StringBuilder sql = new StringBuilder(SELECT_TRAMITE + "WHERE t.publicado ");
         List<Object> params = new ArrayList<>();
         if (texto != null && !texto.isBlank()) {
             sql.append("AND (t.nombre ILIKE ? OR t.descripcion ILIKE ? OR t.codigo_tupa ILIKE ?) ");
@@ -93,6 +95,10 @@ public class TramiteDAO {
     }
 
     public List<Paso> listarPasos(Connection cn, int idTramite) throws SQLException {
+        java.util.Map<Integer, PuntoAtencion> puntos = new java.util.HashMap<>();
+        for (PuntoAtencion p : listarPuntos(cn)) {
+            puntos.put(p.getId(), p);
+        }
         List<Paso> l = new ArrayList<>();
         try (PreparedStatement ps = cn.prepareStatement("SELECT * FROM paso WHERE id_tramite = ? ORDER BY orden, id_paso")) {
             ps.setInt(1, idTramite);
@@ -104,6 +110,11 @@ public class TramiteDAO {
                     p.setOrden(rs.getInt("orden"));
                     p.setDescripcion(rs.getString("descripcion"));
                     p.setPagoPrevio(rs.getBoolean("es_pago_previo"));
+                    int idPunto = rs.getInt("id_punto");
+                    if (!rs.wasNull()) {
+                        p.setIdPunto(idPunto);
+                        p.setPunto(puntos.get(idPunto));
+                    }
                     l.add(p);
                 }
             }
@@ -174,6 +185,12 @@ public class TramiteDAO {
                 p.setHorario(rs.getString("horario"));
                 p.setTelefono(rs.getString("telefono"));
                 p.setCorreo(rs.getString("correo"));
+                p.setIdDependencia(rs.getInt("id_dependencia"));
+                p.setReferencia(rs.getString("referencia"));
+                p.setCoordX(rs.getBigDecimal("coord_x"));
+                p.setCoordY(rs.getBigDecimal("coord_y"));
+                Date fv = rs.getDate("fecha_ultima_verificacion");
+                p.setFechaUltimaVerificacion(fv == null ? null : fv.toLocalDate());
                 l.add(p);
             }
         }
@@ -184,7 +201,7 @@ public class TramiteDAO {
     public int insertar(Connection cn, Tramite t) throws SQLException {
         String sql = "INSERT INTO tramite (id_categoria, id_punto, codigo, codigo_tupa, nombre, descripcion, dirigido_a, "
                 + "derecho_pago, detalle_pago, plazo_referencial, calificacion, estado_contenido, fecha_ultima_verificacion) "
-                + "VALUES (?,?,?,?,?,?,?,?,?,?,?, 'BORRADOR', CURRENT_DATE)";
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?, 'PENDIENTE', CURRENT_DATE)";
         try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             asignarDatos(ps, t);
             ps.executeUpdate();
@@ -224,28 +241,159 @@ public class TramiteDAO {
         ps.setString(11, t.getCalificacion());
     }
 
-    public void cambiarEstado(Connection cn, int idTramite, String estado) throws SQLException {
-        try (PreparedStatement ps = cn.prepareStatement("UPDATE tramite SET estado_contenido=? WHERE id_tramite=?")) {
-            ps.setString(1, estado);
+    // ------------------------------------------------------------------ ciclo de validación (RF-15)
+    /** Versión publicada serializada, o null si el trámite nunca se validó con este mecanismo. */
+    public byte[] leerVersionPublicada(Connection cn, int idTramite) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("SELECT version_publicada FROM tramite WHERE id_tramite = ?")) {
+            ps.setInt(1, idTramite);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getBytes(1) : null;
+            }
+        }
+    }
+
+    /** Guarda la versión que ve el público (antes de un cambio o al aprobarse). */
+    public void guardarVersionPublicada(Connection cn, int idTramite, byte[] version) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("UPDATE tramite SET version_publicada = ? WHERE id_tramite = ?")) {
+            ps.setBytes(1, version);
             ps.setInt(2, idTramite);
             ps.executeUpdate();
         }
     }
 
+    /** RN-11: el cambio queda pendiente de validación; la versión publicada sigue visible. */
+    public void marcarPendiente(Connection cn, int idTramite) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement(
+                "UPDATE tramite SET estado_contenido = 'PENDIENTE' WHERE id_tramite = ?")) {
+            ps.setInt(1, idTramite);
+            ps.executeUpdate();
+        }
+    }
+
+    public void aprobar(Connection cn, int idTramite, byte[] version) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("UPDATE tramite SET estado_contenido = 'PUBLICADO', publicado = TRUE, "
+                + "version_publicada = ?, fecha_publicacion = now(), observacion_validacion = NULL WHERE id_tramite = ?")) {
+            ps.setBytes(1, version);
+            ps.setInt(2, idTramite);
+            ps.executeUpdate();
+        }
+    }
+
+    public void devolver(Connection cn, int idTramite, String observacion) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement(
+                "UPDATE tramite SET estado_contenido = 'DEVUELTO', observacion_validacion = ? WHERE id_tramite = ?")) {
+            ps.setString(1, observacion);
+            ps.setInt(2, idTramite);
+            ps.executeUpdate();
+        }
+    }
+
+    /** Retira el trámite de la vista pública (queda pendiente de una nueva validación). */
+    public void retirar(Connection cn, int idTramite) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("UPDATE tramite SET publicado = FALSE, version_publicada = NULL, "
+                + "estado_contenido = 'PENDIENTE' WHERE id_tramite = ?")) {
+            ps.setInt(1, idTramite);
+            ps.executeUpdate();
+        }
+    }
+
+    public List<Tramite> listarPorEstado(Connection cn, String estado) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement(SELECT_TRAMITE + "WHERE t.estado_contenido = ? ORDER BY t.codigo")) {
+            ps.setString(1, estado);
+            return mapearLista(ps);
+        }
+    }
+
+    // ------------------------------------------------------------------ categorías (RF-12)
+    public int guardarCategoria(Connection cn, Categoria c) throws SQLException {
+        if (c.getId() == 0) {
+            try (PreparedStatement ps = cn.prepareStatement(
+                    "INSERT INTO categoria (nombre, descripcion, icono, orden) VALUES (?,?,?,?)", Statement.RETURN_GENERATED_KEYS)) {
+                datosCategoria(ps, c);
+                ps.executeUpdate();
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    rs.next();
+                    return rs.getInt(1);
+                }
+            }
+        }
+        try (PreparedStatement ps = cn.prepareStatement(
+                "UPDATE categoria SET nombre=?, descripcion=?, icono=?, orden=? WHERE id_categoria=?")) {
+            datosCategoria(ps, c);
+            ps.setInt(5, c.getId());
+            ps.executeUpdate();
+            return c.getId();
+        }
+    }
+
+    private void datosCategoria(PreparedStatement ps, Categoria c) throws SQLException {
+        ps.setString(1, c.getNombre());
+        ps.setString(2, c.getDescripcion());
+        ps.setString(3, c.getIcono() == null ? "bi-folder" : c.getIcono());
+        ps.setInt(4, c.getOrden());
+    }
+
+    public int contarTramitesDeCategoria(Connection cn, int idCategoria) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("SELECT count(*) FROM tramite WHERE id_categoria = ?")) {
+            ps.setInt(1, idCategoria);
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        }
+    }
+
+    public void eliminarCategoria(Connection cn, int idCategoria) throws SQLException {
+        ejecutar(cn, "DELETE FROM categoria WHERE id_categoria = ?", idCategoria);
+    }
+
     public void insertarPaso(Connection cn, Paso p) throws SQLException {
-        String sql = "INSERT INTO paso (id_tramite, orden, descripcion, es_pago_previo) VALUES (?, "
-                + "(SELECT coalesce(max(orden), 0) + 1 FROM paso WHERE id_tramite = ?), ?, ?)";
+        String sql = "INSERT INTO paso (id_tramite, orden, descripcion, es_pago_previo, id_punto) VALUES (?, "
+                + "(SELECT coalesce(max(orden), 0) + 1 FROM paso WHERE id_tramite = ?), ?, ?, ?)";
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setInt(1, p.getIdTramite());
             ps.setInt(2, p.getIdTramite());
             ps.setString(3, p.getDescripcion());
             ps.setBoolean(4, p.isPagoPrevio());
+            if (p.getIdPunto() == null) {
+                ps.setNull(5, Types.INTEGER);
+            } else {
+                ps.setInt(5, p.getIdPunto());
+            }
             ps.executeUpdate();
         }
     }
 
-    public void eliminarPaso(Connection cn, int idPaso) throws SQLException {
-        ejecutar(cn, "DELETE FROM paso WHERE id_paso = ?", idPaso);
+    public void eliminarPaso(Connection cn, int idTramite, int idPaso) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("DELETE FROM paso WHERE id_paso = ? AND id_tramite = ?")) {
+            ps.setInt(1, idPaso);
+            ps.setInt(2, idTramite);
+            ps.executeUpdate();
+        }
+    }
+
+    /** Asigna (o quita) el punto de atención de un paso para la secuencia de visita (RF-09). */
+    public void asignarPuntoPaso(Connection cn, int idTramite, int idPaso, Integer idPunto) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("UPDATE paso SET id_punto = ? WHERE id_paso = ? AND id_tramite = ?")) {
+            if (idPunto == null) {
+                ps.setNull(1, Types.INTEGER);
+            } else {
+                ps.setInt(1, idPunto);
+            }
+            ps.setInt(2, idPaso);
+            ps.setInt(3, idTramite);
+            ps.executeUpdate();
+        }
+    }
+
+    /** Trámite al que pertenece un requisito (para marcarlo pendiente al cambiar su sustento). */
+    public Integer tramiteDeRequisito(Connection cn, int idRequisito) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("SELECT id_tramite FROM requisito WHERE id_requisito = ?")) {
+            ps.setInt(1, idRequisito);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : null;
+            }
+        }
     }
 
     public int insertarRequisito(Connection cn, Requisito r) throws SQLException {
@@ -264,8 +412,12 @@ public class TramiteDAO {
         }
     }
 
-    public void eliminarRequisito(Connection cn, int idRequisito) throws SQLException {
-        ejecutar(cn, "DELETE FROM requisito WHERE id_requisito = ?", idRequisito);
+    public void eliminarRequisito(Connection cn, int idTramite, int idRequisito) throws SQLException {
+        try (PreparedStatement ps = cn.prepareStatement("DELETE FROM requisito WHERE id_requisito = ? AND id_tramite = ?")) {
+            ps.setInt(1, idRequisito);
+            ps.setInt(2, idTramite);
+            ps.executeUpdate();
+        }
     }
 
     public void vincularArticulo(Connection cn, int idRequisito, int idArticulo) throws SQLException {
@@ -334,6 +486,10 @@ public class TramiteDAO {
                 t.setPlazoReferencial(rs.getString("plazo_referencial"));
                 t.setCalificacion(rs.getString("calificacion"));
                 t.setEstadoContenido(rs.getString("estado_contenido"));
+                t.setPublicado(rs.getBoolean("publicado"));
+                Timestamp fp = rs.getTimestamp("fecha_publicacion");
+                t.setFechaPublicacion(fp == null ? null : fp.toLocalDateTime());
+                t.setObservacionValidacion(rs.getString("observacion_validacion"));
                 Date f = rs.getDate("fecha_ultima_verificacion");
                 t.setFechaUltimaVerificacion(f == null ? null : f.toLocalDate());
                 l.add(t);

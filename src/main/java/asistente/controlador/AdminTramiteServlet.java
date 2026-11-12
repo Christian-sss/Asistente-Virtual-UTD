@@ -16,6 +16,7 @@ import java.io.IOException;
 
 /**
  * Gestión de trámites y pasos (RF-12), requisitos con sustento normativo y reglas de revisión (RF-13).
+ * Los cambios quedan pendientes hasta que el personal de la UTD los valida (RF-15).
  */
 @WebServlet(name = "AdminTramiteServlet", urlPatterns = {"/admin/tramites", "/admin/tramite"})
 public class AdminTramiteServlet extends ServletBase {
@@ -68,17 +69,23 @@ public class AdminTramiteServlet extends ServletBase {
                     t.setPlazoReferencial(texto(req, "plazoReferencial"));
                     t.setCalificacion(texto(req, "calificacion"));
                     id = servicio.guardarTramite(u, t);
-                    mensaje(req, "success", "Datos del trámite guardados.");
+                    mensaje(req, "success", "Datos del trámite guardados. Los cambios quedan pendientes de validación por el personal de la UTD.");
                 }
-                case "publicar", "despublicar" -> {
-                    servicio.cambiarEstado(u, id, "publicar".equals(accion));
-                    mensaje(req, "success", "publicar".equals(accion) ? "Trámite publicado." : "Trámite retirado de la publicación.");
+                case "retirar" -> {
+                    servicio.retirar(u, id);
+                    mensaje(req, "success", "Trámite retirado de la publicación. Para volver a publicarlo, el personal de la UTD debe validarlo.");
+                }
+                case "puntoPaso" -> {
+                    servicio.asignarPuntoPaso(u, id, enteroObligatorio(req, "idPaso"), entero(req, "idPunto"));
+                    mensaje(req, "success", "Ubicación del paso actualizada; el cambio queda pendiente de validación.");
+                    ancla = "#pasos";
                 }
                 case "paso" -> {
                     Paso p = new Paso();
                     p.setIdTramite(id);
                     p.setDescripcion(texto(req, "descripcion"));
                     p.setPagoPrevio(req.getParameter("pagoPrevio") != null);
+                    p.setIdPunto(entero(req, "idPunto"));
                     servicio.agregarPaso(u, p);
                     mensaje(req, "success", "Paso agregado.");
                     ancla = "#pasos";

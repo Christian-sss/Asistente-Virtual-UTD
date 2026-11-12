@@ -25,10 +25,12 @@
                         <td class="small"><c:out value="${t.categoria}"/></td>
                         <td class="small"><c:out value="${t.pagoTexto}"/></td>
                         <td class="small"><c:out value="${t.plazoReferencial}"/></td>
-                        <td><span class="badge ${t.publicado ? 'text-bg-success' : 'text-bg-secondary'}">${t.publicado ? 'Publicado' : 'Borrador'}</span></td>
+                        <td class="estado-flujo"><span class="badge ${t.estadoContenido == 'PUBLICADO' ? 'text-bg-success' : t.estadoContenido == 'DEVUELTO' ? 'text-bg-danger' : 'text-bg-warning'}"><c:out value="${t.estadoTexto}"/></span>
+                            <c:if test="${t.publicado and t.estadoContenido != 'PUBLICADO'}"><br><small class="text-secondary">Visible: última versión publicada</small></c:if></td>
                         <td class="text-end text-nowrap">
                             <c:if test="${t.publicado}"><a class="btn btn-sm btn-outline-secondary" href="${ctx}/hoja-ruta?id=${t.id}" title="Ver como usuario"><i class="bi bi-eye"></i></a></c:if>
                             <c:if test="${usr.rol == 'ADMIN_CONTENIDOS'}"><a class="btn btn-sm btn-primary" href="${ctx}/admin/tramite?id=${t.id}"><i class="bi bi-pencil"></i> Editar</a></c:if>
+                            <c:if test="${usr.rol == 'PERSONAL_UTD' and t.pendiente}"><a class="btn btn-sm btn-warning" href="${ctx}/admin/validacion?id=${t.id}"><i class="bi bi-patch-check"></i> Validar</a></c:if>
                         </td>
                     </tr>
                 </c:forEach>

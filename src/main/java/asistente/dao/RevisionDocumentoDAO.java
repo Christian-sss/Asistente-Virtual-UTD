@@ -21,7 +21,7 @@ public class RevisionDocumentoDAO {
 
     public int registrar(Connection cn, RevisionDocumento r) throws SQLException {
         String sql = "INSERT INTO revision_documento (id_tramite, token_sesion, nombre_original, nombre_archivo_uuid, tipo_mime, "
-                + "tamano_bytes, numero_paginas, fecha_carga, fecha_expiracion, estado) VALUES (?,?,?,?,?,?,?,?,?,?)";
+                + "tamano_bytes, numero_paginas, fecha_carga, fecha_expiracion, estado, id_requisito) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
         try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, r.getIdTramite());
             ps.setString(2, r.getTokenSesion());
@@ -37,6 +37,11 @@ public class RevisionDocumentoDAO {
             ps.setTimestamp(8, Timestamp.valueOf(r.getFechaCarga()));
             ps.setTimestamp(9, Timestamp.valueOf(r.getFechaExpiracion()));
             ps.setString(10, r.getEstado());
+            if (r.getIdRequisito() == null) {
+                ps.setNull(11, Types.INTEGER);
+            } else {
+                ps.setInt(11, r.getIdRequisito());
+            }
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
@@ -67,7 +72,8 @@ public class RevisionDocumentoDAO {
 
     /** La revisión solo se entrega a la sesión que cargó el documento. */
     public RevisionDocumento buscar(Connection cn, int idRevision, String token) throws SQLException {
-        String sql = "SELECT r.*, t.nombre AS tramite FROM revision_documento r JOIN tramite t USING (id_tramite) "
+        String sql = "SELECT r.*, t.nombre AS tramite, q.descripcion AS requisito FROM revision_documento r "
+                + "JOIN tramite t USING (id_tramite) LEFT JOIN requisito q ON q.id_requisito = r.id_requisito "
                 + "WHERE r.id_revision = ? AND r.token_sesion = ? AND r.fecha_expiracion > now()";
         try (PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setInt(1, idRevision);
@@ -77,6 +83,7 @@ public class RevisionDocumentoDAO {
                     return null;
                 }
                 RevisionDocumento r = mapear(rs);
+                r.setRequisito(rs.getString("requisito"));
                 r.setResultados(listarResultados(cn, idRevision));
                 return r;
             }
@@ -188,6 +195,8 @@ public class RevisionDocumentoDAO {
         r.setFechaCarga(rs.getTimestamp("fecha_carga").toLocalDateTime());
         r.setFechaExpiracion(rs.getTimestamp("fecha_expiracion").toLocalDateTime());
         r.setEstado(rs.getString("estado"));
+        int idReq = rs.getInt("id_requisito");
+        r.setIdRequisito(rs.wasNull() ? null : idReq);
         return r;
     }
 }

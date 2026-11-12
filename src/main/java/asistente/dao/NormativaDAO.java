@@ -19,6 +19,11 @@ public class NormativaDAO {
 
     /** Normativas que coinciden con el texto (en la norma, sus artículos o los trámites que sustenta). */
     public List<Normativa> buscar(Connection cn, String texto, Integer idTramite) throws SQLException {
+        return buscar(cn, texto, idTramite, null);
+    }
+
+    /** Búsqueda por palabra clave, trámite y tipo de documento normativo (RF-08). */
+    public List<Normativa> buscar(Connection cn, String texto, Integer idTramite, String tipo) throws SQLException {
         StringBuilder sql = new StringBuilder("SELECT DISTINCT n.* FROM normativa n "
                 + "LEFT JOIN articulo_normativo a USING (id_normativa) "
                 + "LEFT JOIN requisito_articulo ra USING (id_articulo) "
@@ -35,6 +40,10 @@ public class NormativaDAO {
         if (idTramite != null) {
             sql.append("AND t.id_tramite = ? ");
             params.add(idTramite);
+        }
+        if (tipo != null && !tipo.isBlank()) {
+            sql.append("AND n.tipo = ? ");
+            params.add(tipo);
         }
         sql.append("ORDER BY n.id_normativa");
         List<Normativa> l = new ArrayList<>();
@@ -189,5 +198,17 @@ public class NormativaDAO {
         Date v = rs.getDate("fecha_ultima_verificacion");
         n.setFechaUltimaVerificacion(v == null ? null : v.toLocalDate());
         return n;
+    }
+
+    /** Tipos de documento normativo registrados (Ley, Resolución Rectoral, ...). */
+    public List<String> listarTipos(Connection cn) throws SQLException {
+        List<String> l = new ArrayList<>();
+        try (PreparedStatement ps = cn.prepareStatement("SELECT DISTINCT tipo FROM normativa ORDER BY tipo");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                l.add(rs.getString(1));
+            }
+        }
+        return l;
     }
 }

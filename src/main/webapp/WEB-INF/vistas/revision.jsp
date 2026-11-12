@@ -18,13 +18,26 @@
                 <input type="hidden" name="_csrf" value="${csrf}">
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="tramite">1. ¿Para qué trámite es tu solicitud?</label>
-                    <select class="form-select" id="tramite" name="tramite" required>
+                    <select class="form-select" id="tramite" name="tramite" required
+                            onchange="location.href='${ctx}/revision' + (this.value ? '?tramite=' + this.value : '')">
                         <option value="">Seleccione el trámite</option>
                         <c:forEach var="t" items="${tramites}">
                             <option value="${t.id}" ${tramiteSel == t.id ? 'selected' : ''}><c:out value="${t.nombre}"/></option>
                         </c:forEach>
                     </select>
                 </div>
+                <c:if test="${not empty requisitos}">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="requisito">¿Qué requisito acredita este documento?</label>
+                        <select class="form-select" id="requisito" name="requisito">
+                            <option value="">La solicitud del trámite</option>
+                            <c:forEach var="r" items="${requisitos}">
+                                <option value="${r.id}" ${requisitoSel == r.id ? 'selected' : ''}><c:out value="${r.descripcion}"/></option>
+                            </c:forEach>
+                        </select>
+                        <div class="form-text">Las reglas de revisión del trámite se aplican a la solicitud; para otros requisitos se valida el archivo.</div>
+                    </div>
+                </c:if>
                 <div class="mb-3">
                     <label class="form-label fw-semibold" for="archivo">2. Selecciona tu solicitud</label>
                     <input class="form-control" type="file" id="archivo" name="archivo" accept=".pdf,.jpg,.jpeg,.png" required>

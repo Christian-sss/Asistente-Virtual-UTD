@@ -13,10 +13,18 @@
 
 <div class="container mt-4">
     <form class="row g-2 mb-4" method="get" action="${ctx}/normativa">
-        <div class="col-md-5">
+        <div class="col-md-4">
             <input class="form-control" type="search" name="q" value="<c:out value='${q}'/>" placeholder="Palabra clave (ej.: bachiller, información, consentimiento)">
         </div>
-        <div class="col-md-5">
+        <div class="col-md-3">
+            <select class="form-select" name="tipo" aria-label="Tipo de documento">
+                <option value="">Todos los tipos de documento</option>
+                <c:forEach var="tp" items="${tipos}">
+                    <option value="<c:out value='${tp}'/>" ${tipoSel == tp ? 'selected' : ''}><c:out value="${tp}"/></option>
+                </c:forEach>
+            </select>
+        </div>
+        <div class="col-md-3">
             <select class="form-select" name="tramite">
                 <option value="">Todos los trámites</option>
                 <c:forEach var="t" items="${tramites}">

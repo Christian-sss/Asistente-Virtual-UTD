@@ -87,6 +87,17 @@ public class GeneradorHojaRutaPdf {
                 }
             }
 
+            java.util.List<PuntoAtencion> secuencia = t.getSecuenciaVisita();
+            if (secuencia.size() > 1 || (secuencia.size() == 1 && secuencia.get(0) != p)) {
+                titulo("Secuencia de visita");
+                int n = 0;
+                for (PuntoAtencion s : secuencia) {
+                    parrafo((++n) + ". " + s.getNombre() + (s.getReferencia() == null ? "" : " - " + s.getReferencia()),
+                            normal, 10, Color.BLACK);
+                }
+                parrafo("Vea el plano del campus en la sección «Ubicación» del asistente.", normal, 8, Color.GRAY);
+            }
+
             titulo("Importante");
             parrafo(AVISO_REFERENCIAL, negrita, 9, new Color(150, 60, 0));
             y -= 6;

@@ -13,17 +13,29 @@
             <h2 class="h4 titulo-seccion mb-0 mt-1"><c:out value="${tramite.id == 0 ? 'Nuevo trámite' : tramite.nombre}"/></h2>
         </div>
         <c:if test="${tramite.id != 0}">
-            <form method="post" action="${ctx}/admin/tramite" class="d-flex align-items-center gap-2">
+            <form method="post" action="${ctx}/admin/tramite" class="d-flex align-items-center gap-2 estado-flujo"
+                  onsubmit="return confirm('¿Retirar el trámite de la vista pública? Para volver a publicarlo, la UTD deberá validarlo.')">
                 <input type="hidden" name="_csrf" value="${csrf}">
                 <input type="hidden" name="id" value="${tramite.id}">
-                <span class="badge ${tramite.publicado ? 'text-bg-success' : 'text-bg-secondary'} fs-6">${tramite.publicado ? 'Publicado' : 'Borrador'}</span>
-                <c:choose>
-                    <c:when test="${tramite.publicado}"><button class="btn btn-outline-secondary btn-sm" name="accion" value="despublicar"><i class="bi bi-eye-slash"></i> Despublicar</button></c:when>
-                    <c:otherwise><button class="btn btn-success btn-sm" name="accion" value="publicar"><i class="bi bi-upload"></i> Publicar</button></c:otherwise>
-                </c:choose>
+                <span class="badge ${tramite.estadoContenido == 'PUBLICADO' ? 'text-bg-success' : tramite.estadoContenido == 'DEVUELTO' ? 'text-bg-danger' : 'text-bg-warning'} fs-6"><c:out value="${tramite.estadoTexto}"/></span>
+                <c:if test="${tramite.publicado}"><a class="btn btn-outline-secondary btn-sm" href="${ctx}/hoja-ruta?id=${tramite.id}" target="_blank"><i class="bi bi-eye"></i> Versión publicada</a>
+                    <button class="btn btn-outline-danger btn-sm" name="accion" value="retirar"><i class="bi bi-eye-slash"></i> Retirar</button></c:if>
             </form>
         </c:if>
     </div>
+
+    <c:if test="${tramite.id != 0}">
+        <c:choose>
+            <c:when test="${tramite.devuelto}">
+                <div class="alert alert-danger"><i class="bi bi-exclamation-octagon"></i> <strong>Devuelto por el personal de la UTD:</strong>
+                    <c:out value="${tramite.observacionValidacion}"/><br><small>Corrija lo indicado: al guardar cualquier cambio, el trámite vuelve a quedar pendiente de validación.</small></div>
+            </c:when>
+            <c:when test="${tramite.pendiente}">
+                <div class="alert alert-warning small"><i class="bi bi-hourglass-split"></i> Los cambios están <strong>pendientes de validación</strong> por el personal de la UTD.
+                    <c:if test="${tramite.publicado}">Mientras tanto, el público sigue viendo la última versión publicada.</c:if></div>
+            </c:when>
+        </c:choose>
+    </c:if>
 
     <!-- Datos del trámite -->
     <div class="card tarjeta mb-4">
@@ -80,6 +92,15 @@
                         <div class="paso-numero">${p.orden}</div>
                         <div class="flex-grow-1 small"><c:out value="${p.descripcion}"/>
                             <c:if test="${p.pagoPrevio}"><span class="badge text-bg-warning">Pago previo</span></c:if></div>
+                        <form method="post" action="${ctx}/admin/tramite" class="d-flex gap-1">
+                            <input type="hidden" name="_csrf" value="${csrf}"><input type="hidden" name="id" value="${tramite.id}">
+                            <input type="hidden" name="idPaso" value="${p.id}">
+                            <select class="form-select form-select-sm" name="idPunto" style="max-width: 220px" title="Dónde se realiza este paso (secuencia de visita)">
+                                <option value="">Sin ubicación</option>
+                                <c:forEach var="pt" items="${puntos}"><option value="${pt.id}" ${p.idPunto == pt.id ? 'selected' : ''}><c:out value="${pt.nombre}"/></option></c:forEach>
+                            </select>
+                            <button class="btn btn-sm btn-outline-secondary" name="accion" value="puntoPaso" title="Guardar ubicación"><i class="bi bi-geo-alt"></i></button>
+                        </form>
                         <form method="post" action="${ctx}/admin/tramite" onsubmit="return confirm('¿Eliminar este paso?')">
                             <input type="hidden" name="_csrf" value="${csrf}"><input type="hidden" name="id" value="${tramite.id}">
                             <input type="hidden" name="idPaso" value="${p.id}">
@@ -89,7 +110,11 @@
                 </c:forEach>
                 <form method="post" action="${ctx}/admin/tramite" class="row g-2 mt-2">
                     <input type="hidden" name="_csrf" value="${csrf}"><input type="hidden" name="id" value="${tramite.id}">
-                    <div class="col-md-8"><input class="form-control form-control-sm" name="descripcion" placeholder="Nuevo paso" required></div>
+                    <div class="col-md-5"><input class="form-control form-control-sm" name="descripcion" placeholder="Nuevo paso" required></div>
+                    <div class="col-md-3"><select class="form-select form-select-sm" name="idPunto" aria-label="Ubicación del paso">
+                        <option value="">Ubicación (opcional)</option>
+                        <c:forEach var="pt" items="${puntos}"><option value="${pt.id}"><c:out value="${pt.nombre}"/></option></c:forEach>
+                    </select></div>
                     <div class="col-md-2 d-flex align-items-center"><div class="form-check">
                         <input class="form-check-input" type="checkbox" name="pagoPrevio" id="pp"><label class="form-check-label small" for="pp">Pago previo</label></div></div>
                     <div class="col-md-2 d-grid"><button class="btn btn-sm btn-outline-primary" name="accion" value="paso"><i class="bi bi-plus"></i> Agregar</button></div>

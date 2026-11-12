@@ -18,6 +18,8 @@ public class RevisionDocumento {
     private java.time.LocalDateTime fechaExpiracion;
     private String estado;
     private java.util.List<ResultadoCriterio> resultados = new java.util.ArrayList<>();
+    private Integer idRequisito;
+    private String requisito;
 
     public int getId() {
         return id;
@@ -134,4 +136,19 @@ public class RevisionDocumento {
         return fechaExpiracion == null ? "" : fechaExpiracion.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 
+    public Integer getIdRequisito() {
+        return idRequisito;
+    }
+
+    public void setIdRequisito(Integer idRequisito) {
+        this.idRequisito = idRequisito;
+    }
+
+    public String getRequisito() {
+        return requisito;
+    }
+
+    public void setRequisito(String requisito) {
+        this.requisito = requisito;
+    }
 }

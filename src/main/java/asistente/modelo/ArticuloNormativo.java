@@ -3,7 +3,9 @@ package asistente.modelo;
 /**
  * Artículo o disposición de una normativa.
  */
-public class ArticuloNormativo {
+public class ArticuloNormativo implements java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int id;
     private int idNormativa;
@@ -77,5 +79,4 @@ public class ArticuloNormativo {
     public void setRequisitosSustentados(java.util.List<String> requisitosSustentados) {
         this.requisitosSustentados = requisitosSustentados;
     }
-
 }

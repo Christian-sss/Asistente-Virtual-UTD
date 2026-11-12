@@ -26,3 +26,52 @@ Los trámites, requisitos, montos y plazos provienen del TUPA vigente de la UNJB
 ## Cómo está pensado
 
 Está construido como una aplicación web en capas: las vistas se apoyan en controladores que delegan la lógica en servicios, y estos acceden a una base de datos relacional. Esa separación permite mantener el contenido y las reglas de revisión sin tocar la interfaz, y deja preparado el sistema para crecer con nuevos trámites y requisitos.
+
+## Requerimientos funcionales cubiertos (versión 2.0)
+
+Esta versión implementa los 16 requerimientos funcionales finales del SRS (FD03 v1.1) y el RF-17 del SAD (FD04).
+
+| RF | Requerimiento | Dónde está |
+|----|---------------|------------|
+| RF-01 | Autenticar usuario administrativo | `LoginServlet`, `ServicioAutenticacion`, `AuthFilter` |
+| RF-02 | Gestionar usuarios y roles | `/admin/usuarios` · `AdminUsuarioServlet`, `ServicioUsuarios` |
+| RF-03 | Buscar trámite en el catálogo | `/tramites` · `TramiteServlet`, `ServicioOrientacion` |
+| RF-04 | Identificar trámite con preguntas guiadas | `/orientacion` · `OrientacionServlet` |
+| RF-05 | Hoja de ruta en PDF | `/hoja-ruta`, `/hoja-ruta/pdf` · `GeneradorHojaRutaPdf` |
+| RF-06 | Cargar documento (asociado a un requisito) | `/revision` · `RevisionServlet`, `ValidadorArchivo` |
+| RF-07 | Revisión formal y reporte (OCR opcional con Tess4J) | `ServicioRevisionDocumental`, `ExtractorTexto`, `EvaluadorReglas` |
+| RF-08 | Consultar normativa (palabra clave, trámite y tipo de documento) | `/normativa` · `NormativaServlet` |
+| RF-09 | Plano del campus (Leaflet.js) y canales digitales | `/ubicacion`, `/ubicacion/puntos`, `/ubicacion/canales` · `UbicacionServlet` |
+| RF-10 | Cargo, expediente y derivación | `/derivacion` · `DerivacionServlet`, `ServicioDerivacion` |
+| RF-11 | Retroalimentación anónima | `POST /retroalimentacion` · `DerivacionServlet` |
+| RF-12 | Categorías, trámites, pasos y preguntas guiadas | `/admin/categorias`, `/admin/tramite`, `/admin/preguntas` |
+| RF-13 | Requisitos, reglas de revisión y normativas | `/admin/tramite`, `/admin/normativas` |
+| RF-14 | Puntos de atención, canales y reglas de derivación | `/admin/ubicaciones`, `/admin/derivacion` · `AdminUbicacionServlet` |
+| RF-15 | Validar y publicar contenidos | `/admin/validacion` · `AdminValidacionServlet`, `ServicioValidacion` |
+| RF-16 | Reportes por periodo y exportación CSV | `/admin/reportes`, `/admin/reportes/csv` · `ReporteServlet`, `ServicioEstadistica` |
+| RF-17 | Eliminación automática de documentos (24 h) | `LimpiezaArchivosListener`, `ServicioLimpieza` |
+
+### Puesta en marcha
+
+1. Crear la base de datos `asistente_utd` en PostgreSQL y ejecutar, en orden, `db/01_esquema.sql` y `db/02_datos.sql`
+   (el esquema recrea todas las tablas; respalde los datos antes de ejecutarlo sobre una base existente).
+2. Ajustar la conexión y los parámetros en `src/main/webapp/META-INF/context.xml`.
+3. Compilar con `mvn package` y desplegar `target/asistente-virtual.war` en Apache Tomcat 10.1 (Java 21).
+
+Usuarios de prueba: `admin` / `Admin2026` (ADMIN_CONTENIDOS) y `utd` / `Utd2026` (PERSONAL_UTD).
+
+### Flujo de publicación (RF-15)
+
+Toda modificación de un trámite queda **pendiente de validación**. Mientras tanto el público sigue viendo la última versión
+aprobada. El personal de la UTD (rol PERSONAL_UTD) la aprueba en `/admin/validacion`, lo que la publica si cumple RN-10
+(al menos un paso y requisitos obligatorios con sustento en una norma vigente), o la devuelve con observaciones.
+
+### Datos que debe completar la UTD
+
+- **Plano del campus:** `recursos/img/plano-campus.svg` es un plano referencial de ejemplo (1000 x 640 px). Reemplácelo por el
+  plano oficial (o cambie `plano.imagen` en `context.xml`) y ajuste las coordenadas de cada punto en «Ubicaciones y canales»,
+  haciendo clic sobre el plano.
+- **Canales digitales:** se cargaron solo los datos ya conocidos (portal, central telefónica, correos de Registros Académicos y
+  el TUPA en El Peruano). Registre la mesa de partes virtual y las demás plataformas de cada dependencia.
+- **Reglas de derivación:** revise las palabras clave iniciales en «Derivación».
+- **OCR (opcional):** instale Tesseract OCR con el idioma español en el servidor y active `ocr.habilitado` en `context.xml`.

@@ -3,7 +3,9 @@ package asistente.modelo;
 /**
  * Requisito de un trámite, sustentado en uno o más artículos normativos.
  */
-public class Requisito {
+public class Requisito implements java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int id;
     private int idTramite;
@@ -59,5 +61,4 @@ public class Requisito {
     public void setArticulos(java.util.List<ArticuloNormativo> articulos) {
         this.articulos = articulos;
     }
-
 }

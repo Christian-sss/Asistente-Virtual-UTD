@@ -10,6 +10,7 @@ public class Categoria {
     private String descripcion;
     private String icono;
     private int totalTramites;
+    private int orden;
 
     public int getId() {
         return id;
@@ -51,4 +52,11 @@ public class Categoria {
         this.totalTramites = totalTramites;
     }
 
+    public int getOrden() {
+        return orden;
+    }
+
+    public void setOrden(int orden) {
+        this.orden = orden;
+    }
 }

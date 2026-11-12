@@ -3,7 +3,9 @@ package asistente.modelo;
 /**
  * Oficina o ventanilla donde se presenta un trámite.
  */
-public class PuntoAtencion {
+public class PuntoAtencion implements java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int id;
     private String dependencia;
@@ -13,6 +15,11 @@ public class PuntoAtencion {
     private String horario;
     private String telefono;
     private String correo;
+    private Integer idDependencia;
+    private String referencia;
+    private java.math.BigDecimal coordX;
+    private java.math.BigDecimal coordY;
+    private java.time.LocalDate fechaUltimaVerificacion;
 
     public int getId() {
         return id;
@@ -78,4 +85,52 @@ public class PuntoAtencion {
         this.correo = correo;
     }
 
+    public Integer getIdDependencia() {
+        return idDependencia;
+    }
+
+    public void setIdDependencia(Integer idDependencia) {
+        this.idDependencia = idDependencia;
+    }
+
+    public String getReferencia() {
+        return referencia;
+    }
+
+    public void setReferencia(String referencia) {
+        this.referencia = referencia;
+    }
+
+    public java.math.BigDecimal getCoordX() {
+        return coordX;
+    }
+
+    public void setCoordX(java.math.BigDecimal coordX) {
+        this.coordX = coordX;
+    }
+
+    public java.math.BigDecimal getCoordY() {
+        return coordY;
+    }
+
+    public void setCoordY(java.math.BigDecimal coordY) {
+        this.coordY = coordY;
+    }
+
+    public java.time.LocalDate getFechaUltimaVerificacion() {
+        return fechaUltimaVerificacion;
+    }
+
+    public void setFechaUltimaVerificacion(java.time.LocalDate fechaUltimaVerificacion) {
+        this.fechaUltimaVerificacion = fechaUltimaVerificacion;
+    }
+
+    public boolean isUbicado() {
+        return coordX != null && coordY != null;
+    }
+
+    /** RN-12: se marca para revisión si la última verificación supera un semestre académico. */
+    public boolean isRevisionPendiente() {
+        return fechaUltimaVerificacion != null && fechaUltimaVerificacion.isBefore(java.time.LocalDate.now().minusMonths(6));
+    }
 }

@@ -35,6 +35,7 @@ public class AdminServlet extends ServletBase {
                 req.setAttribute("temporales", limpieza.documentosTemporales());
                 req.setAttribute("ultimaLimpieza", limpieza.ultimaEjecucion());
                 req.setAttribute("bitacora", contenidos.bitacora(8));
+                req.setAttribute("retroPendiente", new asistente.servicio.ServicioEstadistica().retroalimentacionPendiente());
                 vista(req, resp, "admin/panel");
             }
         }

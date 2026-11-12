@@ -11,13 +11,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Consulta de normativa: búsqueda por trámite o palabra clave y detalle con artículos (RF-08).
+ * Consulta de normativa: búsqueda por trámite, tipo de documento o palabra clave y detalle con artículos (RF-08).
  */
 @WebServlet(name = "NormativaServlet", urlPatterns = {"/normativa", "/normativa/detalle"})
 public class NormativaServlet extends ServletBase {
 
     private final ServicioNormativa servicio = new ServicioNormativa();
     private final ServicioOrientacion orientacion = new ServicioOrientacion();
+    private final asistente.servicio.ServicioEstadistica estadistica = new asistente.servicio.ServicioEstadistica();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -34,10 +35,16 @@ public class NormativaServlet extends ServletBase {
         }
         String q = texto(req, "q");
         Integer tramite = entero(req, "tramite");
+        String tipo = texto(req, "tipo");
         req.setAttribute("q", q);
         req.setAttribute("tramiteSel", tramite);
+        req.setAttribute("tipoSel", tipo);
+        req.setAttribute("tipos", servicio.tipos());
         req.setAttribute("tramites", orientacion.buscarTramites(null, null));
-        req.setAttribute("normativas", servicio.buscar(q, tramite));
+        req.setAttribute("normativas", servicio.buscar(q, tramite, tipo));
+        if (q != null || tramite != null || tipo != null) {
+            estadistica.registrar("NORMATIVA", tramite, null);
+        }
         vista(req, resp, "normativa");
     }
 }

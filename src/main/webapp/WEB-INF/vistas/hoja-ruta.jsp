@@ -90,11 +90,38 @@
                     </div>
                 </div>
             </c:if>
+            <c:if test="${not empty secuencia}">
+                <div class="card tarjeta mb-3">
+                    <div class="card-body">
+                        <h2 class="h6 titulo-seccion"><i class="bi bi-signpost-split"></i> Secuencia de visita</h2>
+                        <ol class="small ps-3 mb-2">
+                            <c:forEach var="p" items="${secuencia}">
+                                <li><c:out value="${p.nombre}"/><c:if test="${not empty p.referencia}"> <span class="text-secondary">(<c:out value="${p.referencia}"/>)</span></c:if></li>
+                            </c:forEach>
+                        </ol>
+                        <a class="btn btn-sm btn-outline-primary w-100 no-imprimir" href="${ctx}/ubicacion?tramite=${tramite.id}"><i class="bi bi-map"></i> Ver en el plano del campus</a>
+                    </div>
+                </div>
+            </c:if>
             <div class="card tarjeta no-imprimir">
                 <div class="card-body">
                     <h2 class="h6 titulo-seccion">Antes de ir a ventanilla</h2>
                     <p class="small text-secondary">Sube tu solicitud y verifica que tenga DNI, correo, fecha, firma y pago.</p>
                     <a class="btn btn-warning w-100" href="${ctx}/revision?tramite=${tramite.id}"><i class="bi bi-file-earmark-check"></i> Revisar mi solicitud</a>
+                </div>
+            </div>
+            <div class="card tarjeta mt-3 no-imprimir">
+                <div class="card-body">
+                    <h2 class="h6 titulo-seccion">Después de presentar</h2>
+                    <p class="small text-secondary mb-2">Conserva el cargo y anota el número de expediente de siete dígitos.</p>
+                    <a class="btn btn-sm btn-outline-secondary w-100" href="${ctx}/derivacion"><i class="bi bi-inboxes"></i> ¿Qué es el cargo y cómo hago el seguimiento?</a>
+                </div>
+            </div>
+            <div class="card tarjeta mt-3 no-imprimir" id="retroalimentacion">
+                <div class="card-body">
+                    <h2 class="h6 titulo-seccion"><i class="bi bi-megaphone"></i> ¿Algún dato no es correcto?</h2>
+                    <c:set var="tramiteRetro" value="${tramite}"/>
+                    <%@ include file="fragmentos/retroalimentacion.jspf" %>
                 </div>
             </div>
         </div>

@@ -3,7 +3,9 @@ package asistente.modelo;
 /**
  * Procedimiento del TUPA publicado en la base de conocimiento.
  */
-public class Tramite {
+public class Tramite implements java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int id;
     private int idCategoria;
@@ -23,6 +25,9 @@ public class Tramite {
     private java.time.LocalDate fechaUltimaVerificacion;
     private java.util.List<Paso> pasos = new java.util.ArrayList<>();
     private java.util.List<Requisito> requisitos = new java.util.ArrayList<>();
+    private boolean publicado;
+    private java.time.LocalDateTime fechaPublicacion;
+    private String observacionValidacion;
 
     public int getId() {
         return id;
@@ -181,7 +186,60 @@ public class Tramite {
     }
 
     public boolean isPublicado() {
-        return "PUBLICADO".equals(estadoContenido);
+        return publicado;
     }
 
+    public void setPublicado(boolean publicado) {
+        this.publicado = publicado;
+    }
+
+    public java.time.LocalDateTime getFechaPublicacion() {
+        return fechaPublicacion;
+    }
+
+    public void setFechaPublicacion(java.time.LocalDateTime fechaPublicacion) {
+        this.fechaPublicacion = fechaPublicacion;
+    }
+
+    public String getObservacionValidacion() {
+        return observacionValidacion;
+    }
+
+    public void setObservacionValidacion(String observacionValidacion) {
+        this.observacionValidacion = observacionValidacion;
+    }
+
+    /** Hay cambios esperando la validación del personal de la UTD (RF-15, RN-11). */
+    public boolean isPendiente() {
+        return "PENDIENTE".equals(estadoContenido);
+    }
+
+    public boolean isDevuelto() {
+        return "DEVUELTO".equals(estadoContenido);
+    }
+
+    public String getEstadoTexto() {
+        if (estadoContenido == null) {
+            return "";
+        }
+        return switch (estadoContenido) {
+            case "PUBLICADO" -> "Publicado";
+            case "DEVUELTO" -> "Devuelto con observaciones";
+            default -> publicado ? "Cambios pendientes de validación" : "Pendiente de validación";
+        };
+    }
+
+    /** Puntos de atención en el orden en que se visitan según los pasos (RF-09). */
+    public java.util.List<PuntoAtencion> getSecuenciaVisita() {
+        java.util.List<PuntoAtencion> l = new java.util.ArrayList<>();
+        for (Paso p : pasos) {
+            if (p.getPunto() != null && (l.isEmpty() || l.get(l.size() - 1).getId() != p.getPunto().getId())) {
+                l.add(p.getPunto());
+            }
+        }
+        if (l.isEmpty() && punto != null) {
+            l.add(punto);
+        }
+        return l;
+    }
 }

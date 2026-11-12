@@ -102,4 +102,25 @@ public abstract class ServletBase extends HttpServlet {
         ALEATORIO.nextBytes(b);
         return HexFormat.of().formatHex(b);
     }
+
+    /** Fecha ISO (aaaa-mm-dd) o null si está vacía o no es válida. */
+    protected java.time.LocalDate fecha(HttpServletRequest req, String nombre) {
+        String v = texto(req, nombre);
+        if (v == null) {
+            return null;
+        }
+        try {
+            return java.time.LocalDate.parse(v);
+        } catch (java.time.format.DateTimeParseException e) {
+            return null;
+        }
+    }
+
+    /** Escribe una respuesta JSON (los datos ya vienen serializados por {@link Json}). */
+    protected void json(HttpServletResponse resp, String cuerpo) throws IOException {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.setHeader("Cache-Control", "no-store");
+        resp.getWriter().write(cuerpo);
+    }
 }

@@ -3,13 +3,17 @@ package asistente.modelo;
 /**
  * Paso ordenado de la hoja de ruta de un trámite.
  */
-public class Paso {
+public class Paso implements java.io.Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int id;
     private int idTramite;
     private int orden;
     private String descripcion;
     private boolean pagoPrevio;
+    private Integer idPunto;
+    private PuntoAtencion punto;
 
     public int getId() {
         return id;
@@ -51,4 +55,19 @@ public class Paso {
         this.pagoPrevio = pagoPrevio;
     }
 
+    public Integer getIdPunto() {
+        return idPunto;
+    }
+
+    public void setIdPunto(Integer idPunto) {
+        this.idPunto = idPunto;
+    }
+
+    public PuntoAtencion getPunto() {
+        return punto;
+    }
+
+    public void setPunto(PuntoAtencion punto) {
+        this.punto = punto;
+    }
 }

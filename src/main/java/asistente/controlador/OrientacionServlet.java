@@ -21,6 +21,7 @@ public class OrientacionServlet extends ServletBase {
 
     private static final String RUTA = "rutaOrientacion";
     private final ServicioOrientacion servicio = new ServicioOrientacion();
+    private final asistente.servicio.ServicioEstadistica estadistica = new asistente.servicio.ServicioEstadistica();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -58,6 +59,7 @@ public class OrientacionServlet extends ServletBase {
             ruta.add(sig.opcionElegida());
             if (sig.tramite() != null) {
                 s.setAttribute("tramiteIdentificado", sig.tramite().getId());
+                estadistica.registrar("ORIENTACION", sig.tramite().getId(), null);
                 redirigir(req, resp, "/hoja-ruta?id=" + sig.tramite().getId() + "&identificado=1");
             } else {
                 redirigir(req, resp, "/orientacion?pregunta=" + sig.pregunta().getId());

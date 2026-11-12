@@ -1,7 +1,7 @@
 -- =====================================================================
 -- Asistente Virtual Web de Gestión y Orientación de Trámites
 -- Documentarios - UTD UNJBG
--- Esquema de base de datos (PostgreSQL) - Avance: 10 requerimientos
+-- Esquema de base de datos (PostgreSQL) - Versión 2.0: RF-01 a RF-17
 -- =====================================================================
 
 DROP SCHEMA IF EXISTS public CASCADE;
@@ -21,7 +21,8 @@ CREATE TABLE categoria (
 CREATE TABLE dependencia (
     id_dependencia SERIAL PRIMARY KEY,
     nombre         VARCHAR(150) NOT NULL UNIQUE,
-    sigla          VARCHAR(20)
+    sigla          VARCHAR(20),
+    funciones      VARCHAR(400)
 );
 
 CREATE TABLE punto_atencion (
@@ -32,13 +33,40 @@ CREATE TABLE punto_atencion (
     direccion      VARCHAR(150) NOT NULL,
     horario        VARCHAR(120) NOT NULL,
     telefono       VARCHAR(200),
-    correo         VARCHAR(400)
+    correo         VARCHAR(400),
+    referencia     VARCHAR(200),                 -- pabellón, piso o ventanilla
+    coord_x        NUMERIC(7,1),                 -- coordenadas sobre el plano del campus (RF-09, RF-14)
+    coord_y        NUMERIC(7,1),
+    fecha_ultima_verificacion DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+-- Portales, mesa de partes virtual, correos y plataformas de cada dependencia (RF-09, RF-14)
+CREATE TABLE canal_digital (
+    id_canal       SERIAL PRIMARY KEY,
+    id_dependencia INTEGER      NOT NULL REFERENCES dependencia ON DELETE CASCADE,
+    tipo           VARCHAR(30)  NOT NULL
+                   CHECK (tipo IN ('PORTAL', 'MESA_PARTES_VIRTUAL', 'CORREO', 'PLATAFORMA', 'TELEFONO', 'RED_SOCIAL')),
+    nombre         VARCHAR(150) NOT NULL,
+    valor          VARCHAR(300) NOT NULL,         -- URL, correo o número
+    descripcion    VARCHAR(300),
+    fecha_ultima_verificacion DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+-- Reglas de derivación: palabras clave que llevan a la dependencia competente (RF-10, RF-14, RN-13)
+CREATE TABLE regla_derivacion (
+    id_regla_derivacion SERIAL PRIMARY KEY,
+    id_dependencia INTEGER      NOT NULL REFERENCES dependencia ON DELETE CASCADE,
+    tema           VARCHAR(150) NOT NULL,
+    palabras_clave VARCHAR(400) NOT NULL,         -- separadas por comas
+    indicacion     VARCHAR(400),
+    activa         BOOLEAN      NOT NULL DEFAULT TRUE,
+    fecha_ultima_verificacion DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
 CREATE TABLE tramite (
     id_tramite                 SERIAL PRIMARY KEY,
     id_categoria               INTEGER      NOT NULL REFERENCES categoria,
-    id_punto                   INTEGER      REFERENCES punto_atencion,
+    id_punto                   INTEGER      REFERENCES punto_atencion ON DELETE SET NULL,
     codigo                     VARCHAR(20)  NOT NULL UNIQUE,
     codigo_tupa                VARCHAR(20),
     nombre                     VARCHAR(200) NOT NULL,
@@ -48,8 +76,15 @@ CREATE TABLE tramite (
     detalle_pago               VARCHAR(200),
     plazo_referencial          VARCHAR(120),
     calificacion               VARCHAR(150),
-    estado_contenido           VARCHAR(20)  NOT NULL DEFAULT 'BORRADOR'
-                               CHECK (estado_contenido IN ('BORRADOR', 'PUBLICADO')),
+    -- Ciclo de validación (RF-15, RN-10, RN-11): toda modificación queda PENDIENTE hasta que
+    -- el personal de la UTD la aprueba (PUBLICADO) o la devuelve con observaciones (DEVUELTO).
+    estado_contenido           VARCHAR(20)  NOT NULL DEFAULT 'PENDIENTE'
+                               CHECK (estado_contenido IN ('PENDIENTE', 'PUBLICADO', 'DEVUELTO')),
+    -- Visible al público. Mientras hay cambios pendientes se muestra la última versión publicada.
+    publicado                  BOOLEAN      NOT NULL DEFAULT FALSE,
+    version_publicada          BYTEA,
+    fecha_publicacion          TIMESTAMP,
+    observacion_validacion     VARCHAR(600),
     fecha_ultima_verificacion  DATE         NOT NULL DEFAULT CURRENT_DATE
 );
 
@@ -58,7 +93,8 @@ CREATE TABLE paso (
     id_tramite     INTEGER      NOT NULL REFERENCES tramite ON DELETE CASCADE,
     orden          SMALLINT     NOT NULL,
     descripcion    VARCHAR(400) NOT NULL,
-    es_pago_previo BOOLEAN      NOT NULL DEFAULT FALSE
+    es_pago_previo BOOLEAN      NOT NULL DEFAULT FALSE,
+    id_punto       INTEGER      REFERENCES punto_atencion ON DELETE SET NULL  -- secuencia de visita (RF-09)
 );
 
 CREATE TABLE pregunta_guia (
@@ -125,7 +161,8 @@ CREATE TABLE regla_revision (
 -- ---------------------------------------------------------------------
 CREATE TABLE revision_documento (
     id_revision         SERIAL PRIMARY KEY,
-    id_tramite          INTEGER      NOT NULL REFERENCES tramite,
+    id_tramite          INTEGER      NOT NULL REFERENCES tramite ON DELETE CASCADE,
+    id_requisito        INTEGER      REFERENCES requisito ON DELETE SET NULL,   -- requisito que acredita (RF-06)
     token_sesion        VARCHAR(64)  NOT NULL,
     nombre_original     VARCHAR(200) NOT NULL,
     nombre_archivo_uuid CHAR(36)     NOT NULL UNIQUE,
@@ -176,6 +213,41 @@ CREATE TABLE bitacora_cambios (
     accion         VARCHAR(30)  NOT NULL,
     valor_anterior TEXT,
     valor_nuevo    TEXT,
+    fecha          TIMESTAMP    NOT NULL DEFAULT now()
+);
+
+-- ---------------------------------------------------------------------
+-- Estadísticas anónimas y retroalimentación (RF-11, RF-16, RN-14)
+-- ---------------------------------------------------------------------
+CREATE TABLE registro_consulta (
+    id_consulta    BIGSERIAL PRIMARY KEY,
+    tipo           VARCHAR(20)  NOT NULL
+                   CHECK (tipo IN ('HOJA_RUTA', 'PDF', 'ORIENTACION', 'NORMATIVA', 'UBICACION', 'DERIVACION', 'REVISION')),
+    id_tramite     INTEGER      REFERENCES tramite ON DELETE SET NULL,
+    id_dependencia INTEGER      REFERENCES dependencia ON DELETE SET NULL,
+    fecha          TIMESTAMP    NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_consulta_fecha ON registro_consulta (fecha);
+
+-- Copia anónima de cada criterio evaluado: se conserva cuando la revisión se elimina a las 24 h
+CREATE TABLE registro_observacion (
+    id_registro    BIGSERIAL PRIMARY KEY,
+    id_revision    INTEGER      REFERENCES revision_documento ON DELETE SET NULL,
+    id_tramite     INTEGER      REFERENCES tramite ON DELETE SET NULL,
+    criterio       VARCHAR(200) NOT NULL,
+    tipo           VARCHAR(30)  NOT NULL,
+    resultado      VARCHAR(20)  NOT NULL CHECK (resultado IN ('CUMPLE', 'OBSERVADO', 'NO_VERIFICABLE')),
+    fecha          TIMESTAMP    NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_observacion_fecha ON registro_observacion (fecha);
+
+CREATE TABLE retroalimentacion (
+    id_retroalimentacion SERIAL PRIMARY KEY,
+    id_tramite     INTEGER      REFERENCES tramite ON DELETE SET NULL,
+    tipo           VARCHAR(30)  NOT NULL
+                   CHECK (tipo IN ('REQUISITO', 'PAGO', 'PLAZO', 'UBICACION', 'NORMATIVA', 'OTRO')),
+    comentario     VARCHAR(500) NOT NULL,
+    atendida       BOOLEAN      NOT NULL DEFAULT FALSE,
     fecha          TIMESTAMP    NOT NULL DEFAULT now()
 );
 

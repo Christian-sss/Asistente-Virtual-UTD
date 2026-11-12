@@ -26,7 +26,7 @@
 
 <section class="container accesos">
     <div class="row g-3">
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4">
             <a href="${ctx}/orientacion" class="card tarjeta-acceso text-decoration-none text-reset">
                 <div class="card-body">
                     <span class="icono-circulo mb-3"><i class="bi bi-signpost-split"></i></span>
@@ -35,7 +35,7 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4">
             <a href="${ctx}/tramites" class="card tarjeta-acceso text-decoration-none text-reset">
                 <div class="card-body">
                     <span class="icono-circulo mb-3"><i class="bi bi-list-check"></i></span>
@@ -44,7 +44,7 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4">
             <a href="${ctx}/revision" class="card tarjeta-acceso text-decoration-none text-reset">
                 <div class="card-body">
                     <span class="icono-circulo mb-3"><i class="bi bi-file-earmark-check"></i></span>
@@ -53,12 +53,30 @@
                 </div>
             </a>
         </div>
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4">
             <a href="${ctx}/normativa" class="card tarjeta-acceso text-decoration-none text-reset">
                 <div class="card-body">
                     <span class="icono-circulo mb-3"><i class="bi bi-journal-bookmark"></i></span>
                     <h5 class="card-title">Normativa</h5>
                     <p class="card-text small text-secondary">La norma vigente que sustenta cada requisito, con su fuente oficial.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <a href="${ctx}/ubicacion" class="card tarjeta-acceso text-decoration-none text-reset">
+                <div class="card-body">
+                    <span class="icono-circulo mb-3"><i class="bi bi-geo-alt"></i></span>
+                    <h5 class="card-title">¿Dónde queda?</h5>
+                    <p class="card-text small text-secondary">Oficinas y ventanillas en el plano del campus, con portales, correos y teléfonos.</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <a href="${ctx}/derivacion" class="card tarjeta-acceso text-decoration-none text-reset">
+                <div class="card-body">
+                    <span class="icono-circulo mb-3"><i class="bi bi-inboxes"></i></span>
+                    <h5 class="card-title">Mi expediente y otras consultas</h5>
+                    <p class="card-text small text-secondary">Qué es el cargo, el número de expediente y sus estados, y a qué oficina acudir.</p>
                 </div>
             </a>
         </div>

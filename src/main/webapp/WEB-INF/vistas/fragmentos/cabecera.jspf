@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="${ctx}/recursos/css/estilos.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
-<nav class="navbar navbar-expand-lg navbar-dark barra-principal sticky-top">
+<nav class="navbar navbar-expand-xl navbar-dark barra-principal sticky-top">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" href="${ctx}/">
             <span class="logo-marca"><i class="bi bi-compass"></i></span>
@@ -24,11 +24,13 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="menu">
-            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+            <ul class="navbar-nav ms-auto align-items-xl-center gap-xl-1">
                 <li class="nav-item"><a class="nav-link ${menu == 'tramites' ? 'active' : ''}" href="${ctx}/tramites"><i class="bi bi-grid"></i> Trámites</a></li>
                 <li class="nav-item"><a class="nav-link ${menu == 'orientacion' ? 'active' : ''}" href="${ctx}/orientacion"><i class="bi bi-signpost-split"></i> Orientación guiada</a></li>
                 <li class="nav-item"><a class="nav-link ${menu == 'revision' ? 'active' : ''}" href="${ctx}/revision"><i class="bi bi-file-earmark-check"></i> Revisar documento</a></li>
                 <li class="nav-item"><a class="nav-link ${menu == 'normativa' ? 'active' : ''}" href="${ctx}/normativa"><i class="bi bi-journal-bookmark"></i> Normativa</a></li>
+                <li class="nav-item"><a class="nav-link ${menu == 'ubicacion' ? 'active' : ''}" href="${ctx}/ubicacion"><i class="bi bi-geo-alt"></i> Ubicación</a></li>
+                <li class="nav-item"><a class="nav-link ${menu == 'derivacion' ? 'active' : ''}" href="${ctx}/derivacion"><i class="bi bi-inboxes"></i> Expediente</a></li>
                 <c:choose>
                     <c:when test="${not empty usr}">
                         <li class="nav-item dropdown">
@@ -37,6 +39,8 @@
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="${ctx}/admin"><i class="bi bi-speedometer2"></i> Panel</a></li>
+                                <c:if test="${usr.rol == 'PERSONAL_UTD'}"><li><a class="dropdown-item" href="${ctx}/admin/validacion"><i class="bi bi-patch-check"></i> Validar contenidos</a></li></c:if>
+                                <li><a class="dropdown-item" href="${ctx}/admin/reportes"><i class="bi bi-bar-chart"></i> Reportes</a></li>
                                 <li><a class="dropdown-item" href="${ctx}/admin/contrasena"><i class="bi bi-key"></i> Cambiar contraseña</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
@@ -49,7 +53,7 @@
                         </li>
                     </c:when>
                     <c:otherwise>
-                        <li class="nav-item"><a class="btn btn-sm btn-outline-light ms-lg-2" href="${ctx}/login"><i class="bi bi-lock"></i> Personal UTD</a></li>
+                        <li class="nav-item"><a class="btn btn-sm btn-outline-light ms-xl-2 text-nowrap" href="${ctx}/login"><i class="bi bi-lock"></i> Personal UTD</a></li>
                     </c:otherwise>
                 </c:choose>
             </ul>

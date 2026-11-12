@@ -24,6 +24,9 @@ public class LoginServlet extends ServletBase {
             redirigir(req, resp, "/admin");
             return;
         }
+        if (req.getParameter("desactivado") != null) {
+            req.setAttribute("error", "Su cuenta fue desactivada. Consulte con el administrador de contenidos.");
+        }
         vista(req, resp, "login");
     }
 

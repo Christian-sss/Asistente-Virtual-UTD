@@ -19,6 +19,10 @@ public final class Configuracion {
     private static String clamavHost;
     private static int clamavPuerto;
     private static boolean clamavObligatorio;
+    private static boolean ocrHabilitado;
+    private static String ocrDatos;
+    private static String ocrIdioma;
+    private static String planoImagen;
 
     private Configuracion() {
     }
@@ -36,6 +40,10 @@ public final class Configuracion {
         clamavHost = valor(ctx, "clamav.host", "127.0.0.1");
         clamavPuerto = Integer.parseInt(valor(ctx, "clamav.puerto", "3310"));
         clamavObligatorio = Boolean.parseBoolean(valor(ctx, "clamav.obligatorio", "false"));
+        ocrHabilitado = Boolean.parseBoolean(valor(ctx, "ocr.habilitado", "false"));
+        ocrDatos = valor(ctx, "ocr.tessdata", "");
+        ocrIdioma = valor(ctx, "ocr.idioma", "spa");
+        planoImagen = valor(ctx, "plano.imagen", "/recursos/img/plano-campus.svg");
     }
 
     private static String valor(ServletContext ctx, String nombre, String porDefecto) {
@@ -52,4 +60,8 @@ public final class Configuracion {
     public static String clamavHost() { return clamavHost; }
     public static int clamavPuerto() { return clamavPuerto; }
     public static boolean clamavObligatorio() { return clamavObligatorio; }
+    public static boolean ocrHabilitado() { return ocrHabilitado; }
+    public static String ocrDatos() { return ocrDatos; }
+    public static String ocrIdioma() { return ocrIdioma; }
+    public static String planoImagen() { return planoImagen; }
 }

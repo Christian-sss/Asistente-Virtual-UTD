@@ -1,6 +1,7 @@
 package asistente.servicio;
 
 import asistente.config.Configuracion;
+import asistente.dao.EstadisticaDAO;
 import asistente.dao.ReglaRevisionDAO;
 import asistente.dao.RevisionDocumentoDAO;
 import asistente.dao.TramiteDAO;
@@ -25,26 +26,34 @@ public class ServicioRevisionDocumental extends ServicioBase {
     private final ReglaRevisionDAO reglaDAO = new ReglaRevisionDAO();
     private final RevisionDocumentoDAO revisionDAO = new RevisionDocumentoDAO();
     private final TramiteDAO tramiteDAO = new TramiteDAO();
+    private final EstadisticaDAO estadisticaDAO = new EstadisticaDAO();
 
     /** Valida, guarda, revisa y registra el documento; devuelve el id de la revisión. */
-    public int revisar(int idTramite, String nombreOriginal, byte[] contenido, String tokenSesion) {
+    public int revisar(int idTramite, Integer idRequisito, String nombreOriginal, byte[] contenido, String tokenSesion) {
         Tramite t = consultar(cn -> tramiteDAO.buscarPorId(cn, idTramite));
         if (t == null || !t.isPublicado()) {
             throw new ReglaNegocioException("Seleccione un trámite publicado.");
         }
+        if (idRequisito != null && t.getRequisitos().stream().noneMatch(r -> r.getId() == idRequisito)) {
+            throw new ReglaNegocioException("El requisito seleccionado no pertenece a este trámite.");
+        }
         ValidadorArchivo.Validacion v = validador.validar(nombreOriginal, contenido);
         String uuid = almacenamiento.guardar(contenido);
         try {
-            String texto = extractor.extraer(contenido, v.tipoMime());
+            ExtractorTexto.Extraccion ex = extractor.extraerConDetalle(contenido, v.tipoMime());
+            String texto = ex.texto();
             List<ResultadoCriterio> resultados = new ArrayList<>(v.criterios());
             boolean legible = texto.strip().length() >= EvaluadorReglas.TEXTO_MINIMO;
             resultados.add(ValidadorArchivo.basico("Texto legible", legible ? "CUMPLE" : "NO_VERIFICABLE",
-                    legible ? "Se extrajo el texto del documento."
-                            : "No hay texto extraíble (imagen o escaneado); el OCR no está habilitado en este avance."));
+                    legible ? (ex.ocr() ? "Se reconoció el texto con OCR; verifique los datos marcados." : "Se extrajo el texto del documento.")
+                            : Configuracion.ocrHabilitado()
+                                ? "No se pudo reconocer texto legible (imagen borrosa o escaneo de baja calidad)."
+                                : "No hay texto extraíble (imagen o escaneado) y el OCR no está habilitado en el servidor."));
             resultados.addAll(evaluador.evaluar(consultar(cn -> reglaDAO.listarPorTramite(cn, idTramite, true)), texto));
 
             RevisionDocumento r = new RevisionDocumento();
             r.setIdTramite(idTramite);
+            r.setIdRequisito(idRequisito);
             r.setTokenSesion(tokenSesion);
             r.setNombreOriginal(nombreOriginal.length() > 200 ? nombreOriginal.substring(0, 200) : nombreOriginal);
             r.setNombreArchivoUuid(uuid);
@@ -57,6 +66,9 @@ public class ServicioRevisionDocumental extends ServicioBase {
             return enTransaccion(cn -> {
                 int id = revisionDAO.registrar(cn, r);
                 revisionDAO.guardarResultados(cn, id, resultados);
+                // Copia anónima para las estadísticas de observaciones frecuentes (RF-16, RN-14)
+                estadisticaDAO.registrarObservaciones(cn, id, idTramite, resultados);
+                estadisticaDAO.registrarConsulta(cn, "REVISION", idTramite, null);
                 return id;
             });
         } catch (RuntimeException e) {
@@ -89,6 +101,7 @@ public class ServicioRevisionDocumental extends ServicioBase {
                     c.setDetalle("No confirmado: " + mensajeRegla(cn, c));
                 }
                 revisionDAO.actualizarResultado(cn, c.getId(), idRevision, c.getResultado(), c.getDetalle());
+                estadisticaDAO.actualizarObservacion(cn, idRevision, c.getCriterio(), c.getResultado());
             }
             revisionDAO.actualizarEstado(cn, idRevision, EvaluadorReglas.estadoGeneral(r.getResultados()));
             return null;

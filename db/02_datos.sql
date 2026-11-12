@@ -427,4 +427,52 @@ UPDATE pregunta_guia SET texto = regexp_replace(texto, ' \[P\d\]$', '');
 INSERT INTO rol (nombre) VALUES ('ADMIN_CONTENIDOS'), ('PERSONAL_UTD');
 INSERT INTO usuario_administrativo (id_rol, usuario, nombre_completo, hash_contrasena) VALUES ((SELECT id_rol FROM rol WHERE nombre='ADMIN_CONTENIDOS'), 'admin', 'Administrador de contenidos UTD', '$2a$10$P.nCWEubnVdcountOlbeFOAgVlO6mXmT0YQwSaQcBWC49dXf3DUyS');
 INSERT INTO usuario_administrativo (id_rol, usuario, nombre_completo, hash_contrasena) VALUES ((SELECT id_rol FROM rol WHERE nombre='PERSONAL_UTD'), 'utd', 'Personal de ventanilla UTD', '$2a$10$vKw1dsthaD0I68AoaZ911.392OwnEHIj4aS5LqtsKDNMIsRAtrnR6');
+-- =====================================================================
+-- Versión 2.0: ubicación (RF-09), derivación (RF-10), canales (RF-14) y
+-- estado de publicación (RF-15). Las coordenadas del plano son
+-- REFERENCIALES: el administrador debe ajustarlas sobre el plano oficial.
+-- =====================================================================
+UPDATE dependencia SET funciones = 'Constancias y certificados de estudios, registro central de notas y copias de documentos académicos.' WHERE sigla = 'DSARC';
+UPDATE dependencia SET funciones = 'Atención de solicitudes dirigidas al Decano(a): constancias de egresado, reanudación de estudios, grados y títulos de la Facultad.' WHERE sigla = 'DEC';
+UPDATE dependencia SET funciones = 'Registros académicos de la Facultad: reserva y rectificación de matrícula, récord de notas.' WHERE sigla = 'SAA';
+UPDATE dependencia SET funciones = 'Escuela Profesional: planes de estudio, convalidaciones, cartas de presentación para prácticas.' WHERE sigla = 'EP';
+UPDATE dependencia SET funciones = 'Diplomas de grados y títulos, duplicados, resoluciones y acceso a la información pública.' WHERE sigla = 'SG';
+UPDATE dependencia SET funciones = 'Recepción, registro, numeración y seguimiento de expedientes (mesa de partes) y archivo.' WHERE sigla = 'UTD';
+UPDATE dependencia SET funciones = 'Pagos de derechos de trámite, devoluciones y recibos.' WHERE sigla = 'TES';
+
+UPDATE punto_atencion p SET coord_x = v.x, coord_y = v.y, referencia = v.ref
+FROM (VALUES ('UTD',   300, 470, 'Edificio administrativo, primer piso'),
+             ('TES',   385, 470, 'Edificio administrativo, primer piso (Caja)'),
+             ('DSARC', 300, 365, 'Edificio administrativo, segundo piso'),
+             ('SG',    420, 365, 'Edificio administrativo, segundo piso'),
+             ('DEC',   655, 245, 'Pabellón de la Facultad'),
+             ('SAA',   745, 245, 'Pabellón de la Facultad'),
+             ('EP',    700, 330, 'Pabellón de la Escuela Profesional')) AS v(sigla, x, y, ref)
+JOIN dependencia d ON d.sigla = v.sigla
+WHERE p.id_dependencia = d.id_dependencia;
+
+INSERT INTO canal_digital (id_dependencia, tipo, nombre, valor, descripcion) VALUES
+((SELECT id_dependencia FROM dependencia WHERE sigla='UTD'), 'PORTAL', 'Portal institucional UNJBG', 'https://www.unjbg.edu.pe', 'Noticias, comunicados y enlaces a los servicios en línea de la universidad.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='UTD'), 'TELEFONO', 'Central telefónica', '052-583000', 'Lunes a viernes de 08:30 a 15:00.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='SAA'), 'CORREO', 'Registros Académicos por Facultad', 'rac.fain@unjbg.edu.pe, rac.fcje@unjbg.edu.pe, rac.fcag@unjbg.edu.pe, rac.facs@unjbg.edu.pe, rac.fech@unjbg.edu.pe, rac.faci@unjbg.edu.pe, rac.fiag@unjbg.edu.pe', 'Use el correo de su Facultad.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='SG'), 'PLATAFORMA', 'TUPA vigente (diario El Peruano)', 'https://busquedas.elperuano.pe/dispositivo/NL/2164959-1', 'Texto Único de Procedimientos Administrativos aprobado por R.R. N.° 11021-2023-UNJBG.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='TES'), 'TELEFONO', 'Central telefónica', '052-583000', 'Consulte los códigos de pago publicados por Tesorería.');
+
+INSERT INTO regla_derivacion (id_dependencia, tema, palabras_clave, indicacion) VALUES
+((SELECT id_dependencia FROM dependencia WHERE sigla='UTD'), 'Expedientes, cargo y seguimiento', 'expediente, cargo, seguimiento, mesa de partes, numero de expediente, estado de mi tramite, recepcion, archivo', 'La UTD recibe, numera y hace el seguimiento de su expediente.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='DSARC'), 'Constancias y certificados de estudios', 'certificado de estudios, constancia de ingreso, constancia de matricula, quinto superior, tercio superior, registro central, copia de documentos', 'Presente su solicitud en la Dirección de Servicios Académicos y Registro Central.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='SAA'), 'Notas y matrícula', 'nota, notas, record, record academico, rectificacion de matricula, reserva de matricula, matricula, retiro de curso', 'Los registros académicos de su Facultad atienden notas y matrícula.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='EP'), 'Plan de estudios, convalidación y prácticas', 'silabo, plan de estudios, convalidacion, practicas, internado, carta de presentacion, horario de clases, docente', 'Acuda a la Secretaría de su Escuela Profesional.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='DEC'), 'Egresado, grados y reanudación', 'egresado, bachiller, titulo profesional, sustentacion, tesis, reanudacion, decano, decanato', 'El Decanato de su Facultad atiende estas solicitudes.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='SG'), 'Diplomas, resoluciones e información pública', 'diploma, duplicado, resolucion, informacion publica, transparencia, cambio de nombre, legalizacion', 'Secretaría General atiende diplomas, resoluciones y acceso a la información.'),
+((SELECT id_dependencia FROM dependencia WHERE sigla='TES'), 'Pagos y devoluciones', 'pago, pagos, caja, recibo, voucher, devolucion, codigo de pago, banco de la nacion', 'La Caja de la UNJBG y Tesorería atienden pagos y devoluciones.');
+
+-- Secuencia de visita: el pago en Caja y la presentación en la oficina del trámite (RF-09)
+UPDATE paso SET id_punto = (SELECT p.id_punto FROM punto_atencion p JOIN dependencia d USING (id_dependencia) WHERE d.sigla='TES')
+WHERE es_pago_previo;
+UPDATE paso p SET id_punto = t.id_punto FROM tramite t
+WHERE p.id_tramite = t.id_tramite AND p.descripcion LIKE 'Presente su expediente%';
+
+-- Los trámites iniciales ya fueron validados por la UTD (RF-15)
+UPDATE tramite SET publicado = TRUE, fecha_publicacion = now() WHERE estado_contenido = 'PUBLICADO';
 COMMIT;

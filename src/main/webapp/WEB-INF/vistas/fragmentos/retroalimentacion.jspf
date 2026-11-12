@@ -1,0 +1,31 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- Formulario de retroalimentación anónima (RF-11). Usa ${tramiteRetro} si se muestra dentro de un trámite. --%>
+<p class="small text-secondary">Avísanos si un requisito, monto, plazo u oficina no es correcto. <strong>No escribas datos personales</strong>
+    (DNI, correo, teléfono): no los necesitamos y se ocultan automáticamente.</p>
+<form method="post" action="${ctx}/retroalimentacion">
+    <input type="hidden" name="_csrf" value="${csrf}">
+    <c:choose>
+        <c:when test="${not empty tramiteRetro}">
+            <input type="hidden" name="tramite" value="${tramiteRetro.id}">
+            <input type="hidden" name="origen" value="hoja">
+        </c:when>
+        <c:otherwise>
+            <select class="form-select form-select-sm mb-2" name="tramite" aria-label="Trámite">
+                <option value="">Información general (sin trámite)</option>
+                <c:forEach var="t" items="${tramites}"><option value="${t.id}"><c:out value="${t.nombre}"/></option></c:forEach>
+            </select>
+        </c:otherwise>
+    </c:choose>
+    <select class="form-select form-select-sm mb-2" name="tipo" required aria-label="Tipo de información">
+        <option value="">¿Qué información es inexacta?</option>
+        <option value="REQUISITO">Un requisito</option>
+        <option value="PAGO">El monto o la forma de pago</option>
+        <option value="PLAZO">El plazo</option>
+        <option value="UBICACION">La oficina, ubicación u horario</option>
+        <option value="NORMATIVA">La normativa</option>
+        <option value="OTRO">Otro</option>
+    </select>
+    <textarea class="form-control form-control-sm mb-2" name="comentario" rows="3" maxlength="500" minlength="10" required
+              placeholder="Describe brevemente qué está mal y, si lo sabes, cuál es el dato correcto"></textarea>
+    <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-send"></i> Enviar reporte anónimo</button>
+</form>

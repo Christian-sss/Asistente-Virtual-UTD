@@ -17,6 +17,7 @@ import java.io.IOException;
 public class HojaRutaServlet extends ServletBase {
 
     private final ServicioOrientacion servicio = new ServicioOrientacion();
+    private final asistente.servicio.ServicioEstadistica estadistica = new asistente.servicio.ServicioEstadistica();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -26,17 +27,20 @@ public class HojaRutaServlet extends ServletBase {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "El trámite no existe o no está publicado.");
             return;
         }
-        if ("/hoja-ruta/pdf".equals(req.getServletPath())) {
-            byte[] pdf = new GeneradorHojaRutaPdf().generar(t);
+        boolean pdf = "/hoja-ruta/pdf".equals(req.getServletPath());
+        estadistica.registrar(pdf ? "PDF" : "HOJA_RUTA", t.getId(), null);
+        if (pdf) {
+            byte[] archivo = new GeneradorHojaRutaPdf().generar(t);
             resp.setContentType("application/pdf");
             resp.setHeader("Content-Disposition", "attachment; filename=\"hoja-de-ruta-" + t.getCodigo() + ".pdf\"");
-            resp.setContentLength(pdf.length);
-            resp.getOutputStream().write(pdf);
+            resp.setContentLength(archivo.length);
+            resp.getOutputStream().write(archivo);
             return;
         }
         req.setAttribute("tramite", t);
         req.setAttribute("aviso", GeneradorHojaRutaPdf.AVISO_REFERENCIAL);
         req.setAttribute("identificado", req.getParameter("identificado") != null);
+        req.setAttribute("secuencia", t.getSecuenciaVisita());
         vista(req, resp, "hoja-ruta");
     }
 }

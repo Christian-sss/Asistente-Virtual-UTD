@@ -17,4 +17,13 @@
     <Parameter name="clamav.host" value="127.0.0.1" override="true"/>
     <Parameter name="clamav.puerto" value="3310" override="true"/>
     <Parameter name="clamav.obligatorio" value="false" override="true"/>
+
+    <!-- OCR opcional con Tess4J (RF-07). Requiere Tesseract OCR instalado en el servidor y el
+         idioma español (spa.traineddata). tessdata vacío = ruta por defecto de Tesseract. -->
+    <Parameter name="ocr.habilitado" value="false" override="true"/>
+    <Parameter name="ocr.tessdata" value="" override="true"/>
+    <Parameter name="ocr.idioma" value="spa" override="true"/>
+
+    <!-- Imagen del plano del campus para Leaflet (RF-09), 1000 x 640 px. Reemplácela por el plano oficial. -->
+    <Parameter name="plano.imagen" value="/recursos/img/plano-campus.svg" override="true"/>
 </Context>

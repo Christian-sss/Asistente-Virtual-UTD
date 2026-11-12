@@ -9,6 +9,7 @@
         <h1><i class="bi bi-clipboard-check"></i> Reporte de conformidad</h1>
         <p class="text-secondary mb-0"><c:out value="${revision.tramite}"/> &middot; <c:out value="${revision.nombreOriginal}"/>
             (<c:out value="${revision.tamanoTexto}"/><c:if test="${not empty revision.numeroPaginas}">, ${revision.numeroPaginas} página(s)</c:if>)</p>
+        <c:if test="${not empty revision.requisito}"><p class="small text-secondary mb-0"><i class="bi bi-paperclip"></i> Requisito que acredita: <c:out value="${revision.requisito}"/></p></c:if>
     </div>
 </div>
 

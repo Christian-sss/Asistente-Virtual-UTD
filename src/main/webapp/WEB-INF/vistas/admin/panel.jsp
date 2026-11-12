@@ -19,6 +19,15 @@
     </div>
 
     <div class="row g-3 mt-1">
+        <div class="col-6 col-lg-4"><a class="card tarjeta text-decoration-none text-reset" href="${ctx}/admin/validacion"><div class="card-body">
+            <div class="cifra ${estadisticas[4] > 0 ? 'text-warning' : ''}">${estadisticas[4]}</div><div class="text-secondary small">Trámites pendientes de validación</div></div></a></div>
+        <div class="col-6 col-lg-4"><a class="card tarjeta text-decoration-none text-reset" href="${ctx}/admin/validacion#devueltos"><div class="card-body">
+            <div class="cifra ${estadisticas[5] > 0 ? 'text-danger' : ''}">${estadisticas[5]}</div><div class="text-secondary small">Devueltos con observaciones</div></div></a></div>
+        <div class="col-12 col-lg-4"><a class="card tarjeta text-decoration-none text-reset" href="${ctx}/admin/reportes?tipo=retroalimentacion"><div class="card-body">
+            <div class="cifra">${retroPendiente}</div><div class="text-secondary small">Reportes de información inexacta sin atender</div></div></a></div>
+    </div>
+
+    <div class="row g-3 mt-1">
         <div class="col-lg-5">
             <div class="card tarjeta h-100">
                 <div class="card-body">
@@ -60,6 +69,14 @@
             <a class="btn btn-primary" href="${ctx}/admin/tramite"><i class="bi bi-plus-lg"></i> Nuevo trámite</a>
             <a class="btn btn-outline-primary" href="${ctx}/admin/preguntas"><i class="bi bi-diagram-3"></i> Editar preguntas guiadas</a>
             <a class="btn btn-outline-primary" href="${ctx}/admin/normativas"><i class="bi bi-journal-plus"></i> Gestionar normativas</a>
+            <a class="btn btn-outline-primary" href="${ctx}/admin/ubicaciones"><i class="bi bi-geo-alt"></i> Ubicaciones y canales</a>
+            <a class="btn btn-outline-primary" href="${ctx}/admin/usuarios"><i class="bi bi-people"></i> Usuarios</a>
+        </div>
+    </c:if>
+    <c:if test="${usr.rol == 'PERSONAL_UTD'}">
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <a class="btn btn-primary" href="${ctx}/admin/validacion"><i class="bi bi-patch-check"></i> Validar contenidos pendientes</a>
+            <a class="btn btn-outline-primary" href="${ctx}/admin/reportes"><i class="bi bi-bar-chart"></i> Reportes estadísticos</a>
         </div>
     </c:if>
 </div>

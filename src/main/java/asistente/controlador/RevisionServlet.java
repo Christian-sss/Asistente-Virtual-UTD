@@ -49,7 +49,15 @@ public class RevisionServlet extends ServletBase {
             return;
         }
         req.setAttribute("tramites", orientacion.buscarTramites(null, null));
-        req.setAttribute("tramiteSel", entero(req, "tramite"));
+        Integer sel = entero(req, "tramite");
+        req.setAttribute("tramiteSel", sel);
+        if (sel != null) {
+            asistente.modelo.Tramite t = orientacion.obtenerTramitePublicado(sel);
+            if (t != null) {
+                req.setAttribute("requisitos", t.getRequisitos());
+            }
+        }
+        req.setAttribute("requisitoSel", entero(req, "requisito"));
         req.setAttribute("clausulaAceptada", Boolean.TRUE.equals(req.getSession().getAttribute(CLAUSULA)));
         vista(req, resp, "revision");
     }
@@ -111,7 +119,7 @@ public class RevisionServlet extends ServletBase {
             archivo.delete();
         }
         try {
-            int id = servicio.revisar(idTramite, nombre, contenido, token(s));
+            int id = servicio.revisar(idTramite, entero(req, "requisito"), nombre, contenido, token(s));
             redirigir(req, resp, "/revision/reporte?id=" + id);
         } catch (ReglaNegocioException e) {
             mensaje(req, "danger", "Archivo rechazado: " + e.getMessage());
