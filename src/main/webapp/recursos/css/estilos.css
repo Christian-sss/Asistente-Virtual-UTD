@@ -11,6 +11,17 @@ body {
     color: #1f2a37;
 }
 
+/* Campos numéricos sin flechas de incremento (en columnas angostas tapaban el valor) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
 .barra-principal {
     background: var(--azul);
     box-shadow: 0 2px 10px rgba(0, 0, 0, .15);

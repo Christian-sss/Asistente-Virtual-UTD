@@ -105,9 +105,9 @@ public class UbicacionDAO {
     public int guardarPunto(Connection cn, PuntoAtencion p) throws SQLException {
         String sql = p.getId() == 0
                 ? "INSERT INTO punto_atencion (id_dependencia, nombre, sede, direccion, horario, telefono, correo, referencia, "
-                  + "coord_x, coord_y, fecha_ultima_verificacion) VALUES (?,?,?,?,?,?,?,?,?,?, CURRENT_DATE)"
+                  + "latitud, longitud, fecha_ultima_verificacion) VALUES (?,?,?,?,?,?,?,?,?,?, CURRENT_DATE)"
                 : "UPDATE punto_atencion SET id_dependencia=?, nombre=?, sede=?, direccion=?, horario=?, telefono=?, correo=?, "
-                  + "referencia=?, coord_x=?, coord_y=?, fecha_ultima_verificacion=CURRENT_DATE WHERE id_punto=?";
+                  + "referencia=?, latitud=?, longitud=?, fecha_ultima_verificacion=CURRENT_DATE WHERE id_punto=?";
         try (PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, p.getIdDependencia());
             ps.setString(2, p.getNombre());
@@ -117,8 +117,8 @@ public class UbicacionDAO {
             ps.setString(6, p.getTelefono());
             ps.setString(7, p.getCorreo());
             ps.setString(8, p.getReferencia());
-            ps.setBigDecimal(9, p.getCoordX());
-            ps.setBigDecimal(10, p.getCoordY());
+            ps.setBigDecimal(9, p.getLatitud());
+            ps.setBigDecimal(10, p.getLongitud());
             if (p.getId() != 0) {
                 ps.setInt(11, p.getId());
             }

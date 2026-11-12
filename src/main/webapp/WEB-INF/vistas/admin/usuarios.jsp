@@ -40,7 +40,7 @@
                     </table>
                 </div>
             </div>
-            <p class="small text-secondary mt-2"><i class="bi bi-info-circle"></i> Los usuarios no se eliminan: se desactivan para conservar la trazabilidad de la bitácora (RN-15).
+            <p class="small text-secondary mt-2"><i class="bi bi-info-circle"></i> Los usuarios no se eliminan: se desactivan para conservar la trazabilidad de la bitácora.
                 ADMIN_CONTENIDOS administra los contenidos; PERSONAL_UTD valida y publica contenidos y consulta reportes.</p>
         </div>
         <div class="col-lg-5">

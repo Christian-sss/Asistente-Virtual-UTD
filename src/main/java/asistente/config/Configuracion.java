@@ -22,7 +22,6 @@ public final class Configuracion {
     private static boolean ocrHabilitado;
     private static String ocrDatos;
     private static String ocrIdioma;
-    private static String planoImagen;
 
     private Configuracion() {
     }
@@ -43,7 +42,6 @@ public final class Configuracion {
         ocrHabilitado = Boolean.parseBoolean(valor(ctx, "ocr.habilitado", "false"));
         ocrDatos = valor(ctx, "ocr.tessdata", "");
         ocrIdioma = valor(ctx, "ocr.idioma", "spa");
-        planoImagen = valor(ctx, "plano.imagen", "/recursos/img/plano-campus.svg");
     }
 
     private static String valor(ServletContext ctx, String nombre, String porDefecto) {
@@ -63,5 +61,4 @@ public final class Configuracion {
     public static boolean ocrHabilitado() { return ocrHabilitado; }
     public static String ocrDatos() { return ocrDatos; }
     public static String ocrIdioma() { return ocrIdioma; }
-    public static String planoImagen() { return planoImagen; }
 }

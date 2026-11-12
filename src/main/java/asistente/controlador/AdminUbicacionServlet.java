@@ -35,9 +35,9 @@ public class AdminUbicacionServlet extends ServletBase {
         req.setAttribute("dependenciaSel", entero(req, "dependencia"));
         req.setAttribute("puntoSel", entero(req, "punto"));
         req.setAttribute("canalSel", entero(req, "canal"));
-        req.setAttribute("planoImagen", asistente.config.Configuracion.planoImagen());
-        req.setAttribute("planoAncho", ServicioUbicacion.Plano.ANCHO);
-        req.setAttribute("planoAlto", ServicioUbicacion.Plano.ALTO);
+        req.setAttribute("mapaLat", ServicioUbicacion.Mapa.CENTRO_LAT);
+        req.setAttribute("mapaLon", ServicioUbicacion.Mapa.CENTRO_LON);
+        req.setAttribute("mapaZoom", ServicioUbicacion.Mapa.ZOOM);
         vista(req, resp, "admin/ubicaciones");
     }
 
@@ -76,8 +76,8 @@ public class AdminUbicacionServlet extends ServletBase {
                     p.setTelefono(texto(req, "telefono"));
                     p.setCorreo(texto(req, "correo"));
                     p.setReferencia(texto(req, "referencia"));
-                    p.setCoordX(decimal(req, "coordX"));
-                    p.setCoordY(decimal(req, "coordY"));
+                    p.setLatitud(decimal(req, "latitud"));
+                    p.setLongitud(decimal(req, "longitud"));
                     servicio.guardarPunto(u, p);
                     mensaje(req, "success", "Punto de atención guardado; se actualizó su fecha de verificación.");
                 }

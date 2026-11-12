@@ -76,7 +76,7 @@
             </div>
         </c:otherwise>
     </c:choose>
-    <p class="small text-secondary mt-2"><i class="bi bi-shield-check"></i> Las estadísticas se generan solo con datos anónimos (RN-14): no se registran
+    <p class="small text-secondary mt-2"><i class="bi bi-shield-check"></i> Las estadísticas se generan solo con datos anónimos: no se registran
         datos personales ni el contenido de los documentos. El CSV usa punto y coma como separador para abrirse directamente en Excel.</p>
 </div>
 

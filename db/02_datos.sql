@@ -429,8 +429,10 @@ INSERT INTO usuario_administrativo (id_rol, usuario, nombre_completo, hash_contr
 INSERT INTO usuario_administrativo (id_rol, usuario, nombre_completo, hash_contrasena) VALUES ((SELECT id_rol FROM rol WHERE nombre='PERSONAL_UTD'), 'utd', 'Personal de ventanilla UTD', '$2a$10$vKw1dsthaD0I68AoaZ911.392OwnEHIj4aS5LqtsKDNMIsRAtrnR6');
 -- =====================================================================
 -- Versión 2.0: ubicación (RF-09), derivación (RF-10), canales (RF-14) y
--- estado de publicación (RF-15). Las coordenadas del plano son
--- REFERENCIALES: el administrador debe ajustarlas sobre el plano oficial.
+-- estado de publicación (RF-15). Las posiciones son APROXIMADAS: todos los
+-- puntos quedan agrupados en el centro de la Ciudad Universitaria (Sede Los
+-- Granados, junto al Óvalo Cusco). El administrador debe ubicar cada oficina
+-- en su edificio haciendo clic en el mapa de «Ubicaciones y canales».
 -- =====================================================================
 UPDATE dependencia SET funciones = 'Constancias y certificados de estudios, registro central de notas y copias de documentos académicos.' WHERE sigla = 'DSARC';
 UPDATE dependencia SET funciones = 'Atención de solicitudes dirigidas al Decano(a): constancias de egresado, reanudación de estudios, grados y títulos de la Facultad.' WHERE sigla = 'DEC';
@@ -440,14 +442,14 @@ UPDATE dependencia SET funciones = 'Diplomas de grados y títulos, duplicados, r
 UPDATE dependencia SET funciones = 'Recepción, registro, numeración y seguimiento de expedientes (mesa de partes) y archivo.' WHERE sigla = 'UTD';
 UPDATE dependencia SET funciones = 'Pagos de derechos de trámite, devoluciones y recibos.' WHERE sigla = 'TES';
 
-UPDATE punto_atencion p SET coord_x = v.x, coord_y = v.y, referencia = v.ref
-FROM (VALUES ('UTD',   300, 470, 'Edificio administrativo, primer piso'),
-             ('TES',   385, 470, 'Edificio administrativo, primer piso (Caja)'),
-             ('DSARC', 300, 365, 'Edificio administrativo, segundo piso'),
-             ('SG',    420, 365, 'Edificio administrativo, segundo piso'),
-             ('DEC',   655, 245, 'Pabellón de la Facultad'),
-             ('SAA',   745, 245, 'Pabellón de la Facultad'),
-             ('EP',    700, 330, 'Pabellón de la Escuela Profesional')) AS v(sigla, x, y, ref)
+UPDATE punto_atencion p SET latitud = v.lat, longitud = v.lon, referencia = v.ref
+FROM (VALUES ('UTD',   -18.024900, -70.249100, 'Edificio administrativo, primer piso'),
+             ('TES',   -18.024760, -70.248940, 'Edificio administrativo, primer piso (Caja)'),
+             ('DSARC', -18.024760, -70.249260, 'Edificio administrativo, segundo piso'),
+             ('SG',    -18.025040, -70.248940, 'Edificio administrativo, segundo piso'),
+             ('DEC',   -18.025040, -70.249260, 'Pabellón de la Facultad'),
+             ('SAA',   -18.024900, -70.248800, 'Pabellón de la Facultad'),
+             ('EP',    -18.024900, -70.249400, 'Pabellón de la Escuela Profesional')) AS v(sigla, lat, lon, ref)
 JOIN dependencia d ON d.sigla = v.sigla
 WHERE p.id_dependencia = d.id_dependencia;
 

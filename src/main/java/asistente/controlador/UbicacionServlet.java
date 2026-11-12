@@ -1,6 +1,5 @@
 package asistente.controlador;
 
-import asistente.config.Configuracion;
 import asistente.modelo.CanalDigital;
 import asistente.modelo.Dependencia;
 import asistente.modelo.Paso;
@@ -22,7 +21,7 @@ import java.util.Map;
 
 /**
  * Ubicación de puntos de trámite y canales digitales (RF-09). La página dibuja con Leaflet.js el
- * plano del campus; /ubicacion/puntos entrega en JSON los puntos y la secuencia de visita del
+ * mapa real del campus (OpenStreetMap); /ubicacion/puntos entrega en JSON los puntos y la secuencia de visita del
  * trámite, y /ubicacion/canales los portales, correos y plataformas de una dependencia.
  */
 @WebServlet(name = "UbicacionServlet", urlPatterns = {"/ubicacion", "/ubicacion/puntos", "/ubicacion/canales"})
@@ -60,12 +59,12 @@ public class UbicacionServlet extends ServletBase {
 
     private Map<String, Object> puntos(HttpServletRequest req, Tramite t) {
         Map<String, Object> r = new LinkedHashMap<>();
-        Map<String, Object> plano = new LinkedHashMap<>();
-        String img = Configuracion.planoImagen();
-        plano.put("imagen", img.startsWith("http") ? img : req.getContextPath() + img);
-        plano.put("ancho", ServicioUbicacion.Plano.ANCHO);
-        plano.put("alto", ServicioUbicacion.Plano.ALTO);
-        r.put("plano", plano);
+        Map<String, Object> mapa = new LinkedHashMap<>();
+        mapa.put("lat", ServicioUbicacion.Mapa.CENTRO_LAT);
+        mapa.put("lon", ServicioUbicacion.Mapa.CENTRO_LON);
+        mapa.put("zoom", ServicioUbicacion.Mapa.ZOOM);
+        mapa.put("campus", req.getContextPath() + "/recursos/datos/campus-unjbg.geojson");
+        r.put("mapa", mapa);
         List<Map<String, Object>> puntos = new ArrayList<>();
         for (Dependencia d : servicio.dependencias()) {
             for (PuntoAtencion p : d.getPuntos()) {
@@ -80,8 +79,8 @@ public class UbicacionServlet extends ServletBase {
                 m.put("horario", p.getHorario());
                 m.put("telefono", p.getTelefono());
                 m.put("correo", p.getCorreo());
-                m.put("x", p.getCoordX());
-                m.put("y", p.getCoordY());
+                m.put("lat", p.getLatitud());
+                m.put("lon", p.getLongitud());
                 m.put("verificado", p.getFechaUltimaVerificacion() == null ? null : p.getFechaUltimaVerificacion().toString());
                 m.put("revisar", p.isRevisionPendiente());
                 puntos.add(m);

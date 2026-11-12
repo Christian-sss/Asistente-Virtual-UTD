@@ -108,7 +108,7 @@
                                                     <c:otherwise><c:out value="${ca.nombre}"/>: <c:out value="${ca.valor}"/></c:otherwise>
                                                 </c:choose></p>
                                         </c:forEach>
-                                        <a class="btn btn-sm btn-outline-primary mt-1" href="${ctx}/ubicacion?dependencia=${r.dependencia().id}#dep${r.dependencia().id}"><i class="bi bi-map"></i> Ver en el plano</a>
+                                        <a class="btn btn-sm btn-outline-primary mt-1" href="${ctx}/ubicacion?dependencia=${r.dependencia().id}#dep${r.dependencia().id}"><i class="bi bi-map"></i> Ver en el mapa</a>
                                     </div>
                                 </c:forEach>
                             </c:otherwise>

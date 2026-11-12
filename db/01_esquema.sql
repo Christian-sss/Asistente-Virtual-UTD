@@ -35,8 +35,8 @@ CREATE TABLE punto_atencion (
     telefono       VARCHAR(200),
     correo         VARCHAR(400),
     referencia     VARCHAR(200),                 -- pabellón, piso o ventanilla
-    coord_x        NUMERIC(7,1),                 -- coordenadas sobre el plano del campus (RF-09, RF-14)
-    coord_y        NUMERIC(7,1),
+    latitud        NUMERIC(9,6),                 -- ubicación real en el mapa (WGS84, OpenStreetMap) (RF-09, RF-14)
+    longitud       NUMERIC(9,6),
     fecha_ultima_verificacion DATE NOT NULL DEFAULT CURRENT_DATE
 );
 

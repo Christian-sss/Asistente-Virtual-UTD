@@ -47,7 +47,7 @@
                                 <span class="badge ${t.pendiente ? 'text-bg-warning' : t.devuelto ? 'text-bg-danger' : 'text-bg-success'} align-self-start"><c:out value="${t.estadoTexto}"/></span>
                             </div>
                             <c:if test="${not empty comparacion.incumplimientos()}">
-                                <div class="alert alert-danger small mt-3 mb-0"><strong>No cumple las condiciones para publicarse (RN-10):</strong>
+                                <div class="alert alert-danger small mt-3 mb-0"><strong>No cumple las condiciones para publicarse:</strong>
                                     <ul class="mb-0"><c:forEach var="f" items="${comparacion.incumplimientos()}"><li><c:out value="${f}"/></li></c:forEach></ul></div>
                             </c:if>
                         </div>

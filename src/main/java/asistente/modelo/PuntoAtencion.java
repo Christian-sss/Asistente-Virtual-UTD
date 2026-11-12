@@ -17,8 +17,9 @@ public class PuntoAtencion implements java.io.Serializable {
     private String correo;
     private Integer idDependencia;
     private String referencia;
-    private java.math.BigDecimal coordX;
-    private java.math.BigDecimal coordY;
+    /** Ubicación real en el mapa (WGS84). */
+    private java.math.BigDecimal latitud;
+    private java.math.BigDecimal longitud;
     private java.time.LocalDate fechaUltimaVerificacion;
 
     public int getId() {
@@ -101,20 +102,20 @@ public class PuntoAtencion implements java.io.Serializable {
         this.referencia = referencia;
     }
 
-    public java.math.BigDecimal getCoordX() {
-        return coordX;
+    public java.math.BigDecimal getLatitud() {
+        return latitud;
     }
 
-    public void setCoordX(java.math.BigDecimal coordX) {
-        this.coordX = coordX;
+    public void setLatitud(java.math.BigDecimal latitud) {
+        this.latitud = latitud;
     }
 
-    public java.math.BigDecimal getCoordY() {
-        return coordY;
+    public java.math.BigDecimal getLongitud() {
+        return longitud;
     }
 
-    public void setCoordY(java.math.BigDecimal coordY) {
-        this.coordY = coordY;
+    public void setLongitud(java.math.BigDecimal longitud) {
+        this.longitud = longitud;
     }
 
     public java.time.LocalDate getFechaUltimaVerificacion() {
@@ -126,7 +127,7 @@ public class PuntoAtencion implements java.io.Serializable {
     }
 
     public boolean isUbicado() {
-        return coordX != null && coordY != null;
+        return latitud != null && longitud != null;
     }
 
     /** RN-12: se marca para revisión si la última verificación supera un semestre académico. */

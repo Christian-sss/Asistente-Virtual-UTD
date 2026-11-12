@@ -69,17 +69,18 @@ public class ServicioUbicacion extends ServicioBase {
         if (p.getIdDependencia() == null) {
             throw new ReglaNegocioException("Seleccione la dependencia del punto de atención.");
         }
-        if ((p.getCoordX() == null) != (p.getCoordY() == null)) {
-            throw new ReglaNegocioException("Indique ambas coordenadas del plano (X e Y) o ninguna.");
+        if ((p.getLatitud() == null) != (p.getLongitud() == null)) {
+            throw new ReglaNegocioException("Indique la latitud y la longitud del punto, o deje ambas vacías.");
         }
-        if (p.getCoordX() != null && (fuera(p.getCoordX(), Plano.ANCHO) || fuera(p.getCoordY(), Plano.ALTO))) {
-            throw new ReglaNegocioException("Las coordenadas deben estar dentro del plano (X de 0 a " + Plano.ANCHO
-                    + ", Y de 0 a " + Plano.ALTO + ").");
+        if (p.getLatitud() != null && !Mapa.dentroDeTacna(p.getLatitud(), p.getLongitud())) {
+            throw new ReglaNegocioException("La ubicación debe estar en la ciudad de Tacna (latitud entre "
+                    + Mapa.LAT_MIN + " y " + Mapa.LAT_MAX + ", longitud entre " + Mapa.LON_MIN + " y " + Mapa.LON_MAX
+                    + "). Revise que no haya invertido la latitud y la longitud.");
         }
         enTransaccion(cn -> {
             dao.guardarPunto(cn, p);
             bitacora.insertar(cn, u.getId(), "punto_atencion", p.getId() == 0 ? "REGISTRO" : "EDICION", null,
-                    p.getNombre() + (p.getCoordX() == null ? "" : " (" + p.getCoordX() + ", " + p.getCoordY() + ")"));
+                    p.getNombre() + (p.getLatitud() == null ? "" : " (" + p.getLatitud() + ", " + p.getLongitud() + ")"));
             return null;
         });
     }
@@ -147,22 +148,32 @@ public class ServicioUbicacion extends ServicioBase {
         });
     }
 
-    private static boolean fuera(BigDecimal v, int max) {
-        return v.signum() < 0 || v.compareTo(BigDecimal.valueOf(max)) > 0;
-    }
-
     private static void obligatorio(String v, String mensaje) {
         if (v == null || v.isBlank()) {
             throw new ReglaNegocioException(mensaje);
         }
     }
 
-    /** Dimensiones del plano del campus (en píxeles de la imagen). */
-    public static final class Plano {
-        public static final int ANCHO = 1000;
-        public static final int ALTO = 640;
+    /**
+     * Mapa real del campus (OpenStreetMap, coordenadas WGS84). El centro es la Ciudad Universitaria
+     * de la UNJBG (Sede Los Granados, junto al Óvalo Cusco). Los puntos se aceptan dentro de la
+     * ciudad de Tacna para admitir también otras sedes.
+     */
+    public static final class Mapa {
+        public static final double CENTRO_LAT = -18.02485;
+        public static final double CENTRO_LON = -70.24913;
+        public static final int ZOOM = 17;
+        public static final double LAT_MIN = -18.15;
+        public static final double LAT_MAX = -17.90;
+        public static final double LON_MIN = -70.35;
+        public static final double LON_MAX = -70.15;
 
-        private Plano() {
+        private Mapa() {
+        }
+
+        public static boolean dentroDeTacna(BigDecimal lat, BigDecimal lon) {
+            double la = lat.doubleValue(), lo = lon.doubleValue();
+            return la >= LAT_MIN && la <= LAT_MAX && lo >= LON_MIN && lo <= LON_MAX;
         }
     }
 }

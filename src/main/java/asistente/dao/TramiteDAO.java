@@ -187,8 +187,8 @@ public class TramiteDAO {
                 p.setCorreo(rs.getString("correo"));
                 p.setIdDependencia(rs.getInt("id_dependencia"));
                 p.setReferencia(rs.getString("referencia"));
-                p.setCoordX(rs.getBigDecimal("coord_x"));
-                p.setCoordY(rs.getBigDecimal("coord_y"));
+                p.setLatitud(rs.getBigDecimal("latitud"));
+                p.setLongitud(rs.getBigDecimal("longitud"));
                 Date fv = rs.getDate("fecha_ultima_verificacion");
                 p.setFechaUltimaVerificacion(fv == null ? null : fv.toLocalDate());
                 l.add(p);

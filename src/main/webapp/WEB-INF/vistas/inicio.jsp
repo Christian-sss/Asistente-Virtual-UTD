@@ -67,7 +67,7 @@
                 <div class="card-body">
                     <span class="icono-circulo mb-3"><i class="bi bi-geo-alt"></i></span>
                     <h5 class="card-title">¿Dónde queda?</h5>
-                    <p class="card-text small text-secondary">Oficinas y ventanillas en el plano del campus, con portales, correos y teléfonos.</p>
+                    <p class="card-text small text-secondary">Oficinas y ventanillas en el mapa del campus, con portales, correos y teléfonos.</p>
                 </div>
             </a>
         </div>

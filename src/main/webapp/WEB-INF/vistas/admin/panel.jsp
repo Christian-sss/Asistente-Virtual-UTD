@@ -31,7 +31,7 @@
         <div class="col-lg-5">
             <div class="card tarjeta h-100">
                 <div class="card-body">
-                    <h2 class="h6 titulo-seccion"><i class="bi bi-trash3"></i> Eliminación automática de documentos (RF-17)</h2>
+                    <h2 class="h6 titulo-seccion"><i class="bi bi-trash3"></i> Eliminación automática de documentos</h2>
                     <p class="small mb-1">Documentos temporales en el servidor: <strong>${temporales}</strong></p>
                     <p class="small mb-1">Retención máxima: <strong>24 horas</strong>; la tarea se ejecuta <strong>cada hora</strong>.</p>
                     <p class="small text-secondary">Última ejecución: <c:out value="${empty ultimaLimpieza ? 'aún no se ha ejecutado' : ultimaLimpieza}"/></p>

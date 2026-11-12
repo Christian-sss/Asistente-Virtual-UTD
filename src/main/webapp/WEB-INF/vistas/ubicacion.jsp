@@ -8,7 +8,7 @@
 <div class="encabezado-pagina">
     <div class="container">
         <h1><i class="bi bi-geo-alt"></i> Ubicación de puntos de trámite y canales digitales</h1>
-        <p class="text-secondary mb-0">Oficinas y ventanillas en el plano del campus, y los portales, correos y teléfonos de cada dependencia.</p>
+        <p class="text-secondary mb-0">Oficinas y ventanillas en el mapa del campus, y los portales, correos y teléfonos de cada dependencia.</p>
     </div>
 </div>
 
@@ -22,7 +22,7 @@
                 </c:forEach>
             </select>
         </div>
-        <div class="col-md-3 d-grid"><button class="btn btn-primary"><i class="bi bi-signpost"></i> Mostrar en el plano</button></div>
+        <div class="col-md-3 d-grid"><button class="btn btn-primary"><i class="bi bi-signpost"></i> Mostrar en el mapa</button></div>
     </form>
 
     <c:if test="${not empty tramite}">
@@ -43,10 +43,11 @@
 
     <div class="card tarjeta mb-4">
         <div id="plano" class="plano-campus" data-url="${ctx}/ubicacion/puntos${empty tramite ? '' : '?tramite='+=tramite.id}"
-             role="application" aria-label="Plano del campus"></div>
+             role="application" aria-label="Mapa del campus"></div>
     </div>
-    <p class="small text-secondary"><i class="bi bi-info-circle"></i> El plano y las posiciones son referenciales. Cada punto indica la fecha de su
-        última verificación; si supera un semestre se marca como pendiente de verificación.</p>
+    <p class="small text-secondary"><i class="bi bi-info-circle"></i> Mapa de la Ciudad Universitaria (Av. Miraflores y Av. Cuzco, Tacna).
+        Use el botón de capas para ver la vista satelital. Cada punto indica la fecha de su última verificación; si supera un
+        semestre se marca como pendiente de verificación.</p>
 
     <h2 class="h5 titulo-seccion mt-4 mb-3">Dependencias, puntos de atención y canales digitales</h2>
     <div class="row g-3">
@@ -63,7 +64,7 @@
                                 <c:if test="${not empty p.referencia}"><c:out value="${p.referencia}"/> &middot; </c:if><c:out value="${p.sede}"/>, <c:out value="${p.direccion}"/><br>
                                 <i class="bi bi-clock"></i> <c:out value="${p.horario}"/>
                                 <c:if test="${not empty p.telefono}"> &middot; <i class="bi bi-telephone"></i> <c:out value="${p.telefono}"/></c:if>
-                                <c:if test="${p.ubicado}"><br><button type="button" class="btn btn-link btn-sm p-0" data-ver-punto="${p.id}"><i class="bi bi-pin-map"></i> Ver en el plano</button></c:if>
+                                <c:if test="${p.ubicado}"><br><button type="button" class="btn btn-link btn-sm p-0" data-ver-punto="${p.id}"><i class="bi bi-pin-map"></i> Ver en el mapa</button></c:if>
                             </div>
                         </c:forEach>
                         <c:if test="${not empty d.canales}">
@@ -88,5 +89,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="${ctx}/recursos/js/plano.js"></script>
+<script src="${ctx}/recursos/js/mapa-base.js?v=2.3"></script>
+<script src="${ctx}/recursos/js/plano.js?v=2.1"></script>
 <%@ include file="fragmentos/pie.jspf" %>

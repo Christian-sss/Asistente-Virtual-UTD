@@ -22,7 +22,7 @@
                     </a>
                 </c:forEach>
             </div>
-            <p class="small text-secondary mt-2">Cada punto y canal guarda la fecha de su última verificación; si supera un semestre se marca para revisión (RN-12).</p>
+            <p class="small text-secondary mt-2">Cada punto y canal guarda la fecha de su última verificación; si supera un semestre se marca para revisión.</p>
         </div>
 
         <div class="col-lg-8">
@@ -57,8 +57,10 @@
                         <div class="card tarjeta mb-3">
                             <div class="card-body">
                                 <h2 class="h6 titulo-seccion">Puntos de atención</h2>
-                                <p class="small text-secondary">Haga clic en el plano para tomar las coordenadas X e Y del punto que está editando.</p>
-                                <div id="planoAdmin" class="plano-campus mb-3" style="height: 360px"></div>
+                                <p class="small text-secondary">Haga clic en el formulario del punto que quiere ubicar (queda resaltado) y luego
+                                    haga clic en el mapa sobre su edificio: se llenan la latitud y la longitud. Después pulse <i class="bi bi-save"></i> para guardar.
+                                    Use el botón de capas para cambiar a la vista satelital y reconocer los edificios.</p>
+                                <div id="planoAdmin" class="plano-campus mb-3" style="height: 420px"></div>
                                 <c:forEach var="p" items="${dep.puntos}">
                                     <form method="post" action="${ctx}/admin/ubicaciones" class="row g-2 border rounded p-2 mb-2 form-punto">
                                         <input type="hidden" name="_csrf" value="${csrf}"><input type="hidden" name="id" value="${p.id}"><input type="hidden" name="idDependencia" value="${dep.id}">
@@ -69,8 +71,8 @@
                                         <div class="col-md-6"><input class="form-control form-control-sm" name="horario" value="<c:out value='${p.horario}'/>" required maxlength="120" aria-label="Horario"></div>
                                         <div class="col-md-6"><input class="form-control form-control-sm" name="telefono" value="<c:out value='${p.telefono}'/>" placeholder="Teléfono" maxlength="200"></div>
                                         <div class="col-12"><input class="form-control form-control-sm" name="correo" value="<c:out value='${p.correo}'/>" placeholder="Correo" maxlength="400"></div>
-                                        <div class="col-6 col-md-3"><input class="form-control form-control-sm coord-x" name="coordX" value="${p.coordX}" placeholder="X" type="number" step="0.1" min="0" max="${planoAncho}" aria-label="Coordenada X"></div>
-                                        <div class="col-6 col-md-3"><input class="form-control form-control-sm coord-y" name="coordY" value="${p.coordY}" placeholder="Y" type="number" step="0.1" min="0" max="${planoAlto}" aria-label="Coordenada Y"></div>
+                                        <div class="col-6 col-md-3"><input class="form-control form-control-sm coord-lat" name="latitud" value="${p.latitud}" placeholder="Latitud" type="number" step="0.000001" min="-90" max="90" aria-label="Latitud" title="Latitud"></div>
+                                        <div class="col-6 col-md-3"><input class="form-control form-control-sm coord-lon" name="longitud" value="${p.longitud}" placeholder="Longitud" type="number" step="0.000001" min="-180" max="180" aria-label="Longitud" title="Longitud"></div>
                                         <div class="col-md-6 d-flex gap-2 align-items-center justify-content-end">
                                             <small class="${p.revisionPendiente ? 'text-danger' : 'text-secondary'}">Verificado: ${p.fechaUltimaVerificacion}</small>
                                             <button class="btn btn-sm btn-primary" name="accion" value="punto" title="Guardar y marcar como verificado"><i class="bi bi-save"></i></button>
@@ -88,8 +90,8 @@
                                     <div class="col-md-6"><input class="form-control form-control-sm" name="horario" value="Lunes a viernes de 08:30 a 15:00" required maxlength="120"></div>
                                     <div class="col-md-6"><input class="form-control form-control-sm" name="telefono" placeholder="Teléfono" maxlength="200"></div>
                                     <div class="col-12"><input class="form-control form-control-sm" name="correo" placeholder="Correo" maxlength="400"></div>
-                                    <div class="col-6 col-md-3"><input class="form-control form-control-sm coord-x" name="coordX" placeholder="X" type="number" step="0.1" min="0" max="${planoAncho}"></div>
-                                    <div class="col-6 col-md-3"><input class="form-control form-control-sm coord-y" name="coordY" placeholder="Y" type="number" step="0.1" min="0" max="${planoAlto}"></div>
+                                    <div class="col-6 col-md-3"><input class="form-control form-control-sm coord-lat" name="latitud" placeholder="Latitud" type="number" step="0.000001" min="-90" max="90" aria-label="Latitud" title="Latitud"></div>
+                                    <div class="col-6 col-md-3"><input class="form-control form-control-sm coord-lon" name="longitud" placeholder="Longitud" type="number" step="0.000001" min="-180" max="180" aria-label="Longitud" title="Longitud"></div>
                                     <div class="col-md-6 text-end"><button class="btn btn-sm btn-outline-primary" name="accion" value="punto"><i class="bi bi-plus"></i> Agregar punto</button></div>
                                 </form>
                             </div>
@@ -138,36 +140,45 @@
 
 <c:if test="${not empty dep}">
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="${ctx}/recursos/js/mapa-base.js?v=2.3"></script>
 <script>
     (function () {
         var el = document.getElementById('planoAdmin');
-        if (!el || typeof L === 'undefined') { return; }
-        var ancho = ${planoAncho}, alto = ${planoAlto};
-        var limites = [[0, 0], [alto, ancho]];
-        var mapa = L.map(el, {crs: L.CRS.Simple, minZoom: -1, maxZoom: 2, zoomSnap: 0.25, attributionControl: false});
-        L.imageOverlay('${ctx}${planoImagen}', limites).addTo(mapa);
-        mapa.fitBounds(limites);
-        var formActivo = document.querySelector('.form-punto:last-of-type');
-        document.querySelectorAll('.form-punto').forEach(function (f) {
-            f.addEventListener('focusin', function () {
-                document.querySelectorAll('.form-punto').forEach(function (o) { o.classList.remove('bg-light'); });
+        if (!el) { return; }
+        if (typeof L === 'undefined' || typeof MapaCampus === 'undefined') {
+            el.textContent = 'No se pudo cargar el mapa (sin conexión a internet). Puede escribir la latitud y la longitud a mano.';
+            return;
+        }
+        var mapa = MapaCampus.crear(el, {lat: ${mapaLat}, lon: ${mapaLon}, zoom: ${mapaZoom},
+            campus: '${ctx}/recursos/datos/campus-unjbg.geojson', satelite: true});
+        var formularios = document.querySelectorAll('.form-punto');
+        var formActivo = formularios[formularios.length - 1];
+        var ubicados = [];
+        formularios.forEach(function (f) {
+            function activar() {
+                formularios.forEach(function (o) { o.classList.remove('bg-light'); });
                 f.classList.add('bg-light');
                 formActivo = f;
-            });
-            var x = f.querySelector('.coord-x').value, y = f.querySelector('.coord-y').value;
-            if (x !== '' && y !== '') {
-                L.circleMarker([alto - Number(y), Number(x)], {radius: 8, color: '#072a4f', fillColor: '#e0a526', fillOpacity: .95})
-                    .addTo(mapa).bindTooltip(f.querySelector('[name=nombre]').value);
+            }
+            f.addEventListener('focusin', activar);
+            f.addEventListener('pointerdown', activar);
+            var lat = f.querySelector('.coord-lat').value, lon = f.querySelector('.coord-lon').value;
+            if (lat !== '' && lon !== '') {
+                var ll = [Number(lat), Number(lon)];
+                ubicados.push(ll);
+                MapaCampus.marcador(ll).addTo(mapa).bindTooltip(f.querySelector('[name=nombre]').value);
             }
         });
+        if (ubicados.length > 0) {
+            mapa.fitBounds(L.latLngBounds(ubicados).pad(0.5), {maxZoom: 18});
+        }
         var nuevo = null;
         mapa.on('click', function (e) {
-            var x = Math.round(e.latlng.lng * 10) / 10, y = Math.round((alto - e.latlng.lat) * 10) / 10;
-            if (x < 0 || y < 0 || x > ancho || y > alto || !formActivo) { return; }
-            formActivo.querySelector('.coord-x').value = x;
-            formActivo.querySelector('.coord-y').value = y;
+            if (!formActivo) { return; }
+            formActivo.querySelector('.coord-lat').value = e.latlng.lat.toFixed(6);
+            formActivo.querySelector('.coord-lon').value = e.latlng.lng.toFixed(6);
             if (nuevo) { mapa.removeLayer(nuevo); }
-            nuevo = L.circleMarker(e.latlng, {radius: 9, color: '#c0392b', fillColor: '#c0392b', fillOpacity: .6}).addTo(mapa)
+            nuevo = L.circleMarker(e.latlng, {radius: 9, color: MapaCampus.COLOR.ruta, fillColor: MapaCampus.COLOR.ruta, fillOpacity: .6}).addTo(mapa)
                 .bindTooltip('Nueva posición: guarde el formulario resaltado').openTooltip();
         });
     })();

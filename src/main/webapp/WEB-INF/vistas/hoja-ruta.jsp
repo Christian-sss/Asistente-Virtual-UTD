@@ -62,8 +62,6 @@
                     </ol>
                 </div>
             </div>
-
-            <div class="aviso-referencial"><i class="bi bi-info-circle"></i> <strong>Importante:</strong> <c:out value="${aviso}"/></div>
         </div>
 
         <div class="col-lg-4">
@@ -99,7 +97,7 @@
                                 <li><c:out value="${p.nombre}"/><c:if test="${not empty p.referencia}"> <span class="text-secondary">(<c:out value="${p.referencia}"/>)</span></c:if></li>
                             </c:forEach>
                         </ol>
-                        <a class="btn btn-sm btn-outline-primary w-100 no-imprimir" href="${ctx}/ubicacion?tramite=${tramite.id}"><i class="bi bi-map"></i> Ver en el plano del campus</a>
+                        <a class="btn btn-sm btn-outline-primary w-100 no-imprimir" href="${ctx}/ubicacion?tramite=${tramite.id}"><i class="bi bi-map"></i> Ver en el mapa del campus</a>
                     </div>
                 </div>
             </c:if>

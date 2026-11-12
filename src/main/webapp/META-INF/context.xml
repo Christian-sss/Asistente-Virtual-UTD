@@ -24,6 +24,5 @@
     <Parameter name="ocr.tessdata" value="" override="true"/>
     <Parameter name="ocr.idioma" value="spa" override="true"/>
 
-    <!-- Imagen del plano del campus para Leaflet (RF-09), 1000 x 640 px. Reemplácela por el plano oficial. -->
-    <Parameter name="plano.imagen" value="/recursos/img/plano-campus.svg" override="true"/>
+    <!-- El mapa del campus (RF-09) usa OpenStreetMap: el navegador del visitante necesita acceso a internet. -->
 </Context>

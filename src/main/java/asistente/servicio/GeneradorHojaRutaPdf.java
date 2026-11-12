@@ -31,7 +31,10 @@ public class GeneradorHojaRutaPdf {
 
     private static final float MARGEN = 50;
     private static final float ANCHO = PDRectangle.A4.getWidth() - 2 * MARGEN;
-    private static final Color AZUL = new Color(0, 59, 113);
+    /** Color institucional del encabezado, títulos y líneas (guinda). */
+    private static final Color PRINCIPAL = new Color(122, 30, 43);
+    /** Franja de acento bajo el encabezado (dorado). */
+    private static final Color ACENTO = new Color(224, 165, 38);
 
     private final PDType1Font normal = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
     private final PDType1Font negrita = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
@@ -45,8 +48,11 @@ public class GeneradorHojaRutaPdf {
             doc = d;
             nuevaPagina();
             // Encabezado
-            cs.setNonStrokingColor(AZUL);
+            cs.setNonStrokingColor(PRINCIPAL);
             cs.addRect(0, PDRectangle.A4.getHeight() - 70, PDRectangle.A4.getWidth(), 70);
+            cs.fill();
+            cs.setNonStrokingColor(ACENTO);
+            cs.addRect(0, PDRectangle.A4.getHeight() - 74, PDRectangle.A4.getWidth(), 4);
             cs.fill();
             cs.setNonStrokingColor(Color.WHITE);
             texto("UNIVERSIDAD NACIONAL JORGE BASADRE GROHMANN", negrita, 12, MARGEN, PDRectangle.A4.getHeight() - 30);
@@ -54,7 +60,7 @@ public class GeneradorHojaRutaPdf {
             cs.setNonStrokingColor(Color.BLACK);
             y = PDRectangle.A4.getHeight() - 100;
 
-            parrafo(t.getNombre(), negrita, 15, AZUL);
+            parrafo(t.getNombre(), negrita, 15, PRINCIPAL);
             parrafo(t.getDescripcion(), normal, 10, Color.DARK_GRAY);
             y -= 4;
             dato("Código del procedimiento (TUPA)", t.getCodigoTupa());
@@ -95,11 +101,9 @@ public class GeneradorHojaRutaPdf {
                     parrafo((++n) + ". " + s.getNombre() + (s.getReferencia() == null ? "" : " - " + s.getReferencia()),
                             normal, 10, Color.BLACK);
                 }
-                parrafo("Vea el plano del campus en la sección «Ubicación» del asistente.", normal, 8, Color.GRAY);
+                parrafo("Vea el mapa del campus en la sección «Ubicación» del asistente.", normal, 8, Color.GRAY);
             }
 
-            titulo("Importante");
-            parrafo(AVISO_REFERENCIAL, negrita, 9, new Color(150, 60, 0));
             y -= 6;
             parrafo("Generado el " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                     + ". Fuente: TUPA UNJBG, R.R. N.° 11021-2023-UNJBG.", normal, 8, Color.GRAY);
@@ -124,7 +128,7 @@ public class GeneradorHojaRutaPdf {
         y -= 8;
         espacio(30);
         texto(s.toUpperCase(), negrita, 11, MARGEN, y);
-        cs.setStrokingColor(AZUL);
+        cs.setStrokingColor(PRINCIPAL);
         cs.moveTo(MARGEN, y - 4);
         cs.lineTo(MARGEN + ANCHO, y - 4);
         cs.stroke();
