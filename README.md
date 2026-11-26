@@ -211,7 +211,6 @@ Usuarios de prueba incluidos en `db/02_datos.sql`:
 | `admin` | `Admin2026` | ADMIN_CONTENIDOS |
 | `utd` | `Utd2026` | PERSONAL_UTD |
 
-> Estas credenciales son solo para el entorno de desarrollo. Cámbielas desde el panel antes de publicar la aplicación.
 
 ### Flujo de publicación
 
